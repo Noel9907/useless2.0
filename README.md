@@ -89,3 +89,15 @@ response :
 {
 "message": "File deleted successfully"
 }
+
+PATCH `http://127.0.0.1:8000/files/:id/rename`
+
+body :
+{
+"filename": "new_file_name.txt"
+}
+
+response :
+{
+"message": "Filename updated successfully"
+}

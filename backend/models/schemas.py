@@ -18,3 +18,6 @@ class FileResponse(BaseModel):
 class FileUpdateRequest(BaseModel):
     filename: str
     content: str
+
+class FileRenameRequest(BaseModel):
+    filename: str

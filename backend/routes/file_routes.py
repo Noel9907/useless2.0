@@ -3,7 +3,7 @@ from models.schemas import FileCreateRequest
 from db.mongodb import files_collection
 from datetime import datetime
 from bson import ObjectId
-from models.schemas import FileUpdateRequest
+from models.schemas import FileUpdateRequest,FileRenameRequest
 router = APIRouter()
 
 @router.post("/files/create")
@@ -81,3 +81,17 @@ async def delete_file(file_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="File not found")
     return {"message": "File deleted successfully"}
+@router.patch("/files/{file_id}/rename")
+async def rename_file(file_id: str, rename_data: FileRenameRequest):
+    result = await files_collection.update_one(
+        {"_id": ObjectId(file_id)},
+        {"$set": {
+            "filename": rename_data.filename,
+            "updated_at": datetime.utcnow()
+        }}
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    return {"message": "Filename updated successfully"}
