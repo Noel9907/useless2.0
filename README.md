@@ -94,7 +94,11 @@ Body: {
 
 # Video
 
-[![Watch the video](./d.png)](https://youtu.be/ihJyEw82o4Y)
+<p align="center">
+  <a href="https://youtu.be/ihJyEw82o4Y">
+    <img src="./d.png" alt="Watch the video" width="600">
+  </a>
+</p>
 
 # Additional Demos
 
