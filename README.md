@@ -27,16 +27,14 @@ We created **മലമ്പാമ്പ്**, a Malayalam programming language 
 
 For Software:
 
-- **Languages used**: Python (FastAPI backend), JavaScript (potential frontend)
+- **Languages used**: Python (FastAPI backend), React ( frontend)
 - **Frameworks used**: FastAPI, Uvicorn
-- **Libraries used**: MongoDB (for file storage), Pydantic (data validation)
+- **Libraries used**: MongoDB (for storage), Pydantic (data validation)
 - **Tools used**: VS Code, Postman (for API testing), MongoDB Compass
 
 For Hardware:
 
 - Standard computer with internet connection
-- Minimum 4GB RAM (for running the interpreter)
-- 100MB storage space
 
 ### Implementation
 
@@ -46,49 +44,23 @@ For Software:
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
-cd malampamp-programming-language
+git clone https://github.com/Noel9907/useless2.0
+cd useless2.0
 
 # Install dependencies
-pip install fastapi uvicorn pymongo
-
-# Start MongoDB (make sure MongoDB is installed)
-mongod
+pip install -r requirements.txt
 
 # Run the server
 uvicorn main:app --reload
-```
-
-# Run
-
-```bash
-# Start the API server
-python main.py
-# or
-uvicorn main:app --host 127.0.0.1 --port 8000
-
-# The API will be available at http://127.0.0.1:8000
 ```
 
 ### Project Documentation
 
 For Software:
 
-# Screenshots (Add at least 3)
-
-![Screenshot1](add-your-api-testing-screenshot)
-_API testing in Postman showing Malayalam code execution with output "നോവൽ" and tea break functionality_
-
-![Screenshot2](add-your-code-editor-screenshot)
-_VS Code showing മലമ്പാമ്പ് source code with syntax like "പേര് = \"നോവൽ\"" and "പറയു പേര്"_
-
-![Screenshot3](add-your-mongodb-screenshot)
-_MongoDB database showing stored മലമ്പാമ്പ് code files with filenames ending in .mlm extension_
-
 # Diagrams
 
-![Workflow](add-your-architecture-diagram)
-_Architecture diagram showing: Client Request → FastAPI Server → മലമ്പാമ്പ് Parser → Code Execution → MongoDB Storage → Response_
+![App Screenshot](./d.png)
 
 ## API Endpoints
 
