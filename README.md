@@ -94,10 +94,7 @@ Body: {
 
 # Video
 
-<p align="center">
-  <a href="https://youtu.be/ihJyEw82o4Y">
-  </a>
-</p>
+[![Watch the video]](https://github.com/user-attachments/assets/655ed194-d68c-44fd-955e-81171b670e76)
 
 # Additional Demos
 
