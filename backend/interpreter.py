@@ -1,6 +1,5 @@
 import re
 import time
-import random
 
 class MalayalamInterpreter:
     def __init__(self):
@@ -16,35 +15,27 @@ class MalayalamInterpreter:
 
     def run_line(self, line):
         line = line.strip()
-        print(f"DEBUG: Processing line: '{line}'")
 
         # Variable assignment: പേര് = "നോവൽ"
         if "=" in line and not line.startswith("എങ്കിൽ"):
             var, val = line.split("=", 1)
             var = var.strip()
             val = val.strip()
-            print(f"DEBUG: Raw var='{var}', Raw val='{val}'")
             if val.startswith('"') and val.endswith('"'):
                 val = val[1:-1]
             self.vars[var] = val
-            print(f"DEBUG: Stored variable '{var}' = '{val}'")
-            print(f"DEBUG: Current vars: {self.vars}")
             return
 
         # Print: പറയു ...
         if line.startswith("പറയു "):
             text = line.replace("പറയു ", "", 1)
-            print(f"DEBUG: Text after 'പറയു ': '{text}'")
             if text.startswith('"') and text.endswith('"'):
                 text = text[1:-1]
-                print(f"DEBUG: Text after removing quotes: '{text}'")
             if text in self.vars:
                 text = self.vars[text]
-                print(f"DEBUG: Replaced with: '{text}'")
             else:
                 text = self.replace_vars(text)
             self.output.append(text)
-            print(f"DEBUG: Added to output: '{text}'")
             return
 
         # Tea break: ചായകട
@@ -53,7 +44,7 @@ class MalayalamInterpreter:
             time.sleep(1)  # demo delay
             return
 
-        # Unknown
+        # Unknown command
         self.output.append(f"❌ തെറ്റ്: '{line}' എനിക്ക് മനസ്സിലായില്ല")
 
     def run(self, code):
@@ -64,7 +55,7 @@ class MalayalamInterpreter:
         while i < len(lines):
             line = lines[i].strip()
 
-            # Loop with body: വരിക്കു N ... അവസാനം
+            # Loop: വരിക്കു N ... അവസാനം
             if line.startswith("വരിക്കു "):
                 count_str = line.replace("വരിക്കു ", "", 1).strip()
                 try:
@@ -81,10 +72,38 @@ class MalayalamInterpreter:
                     loop_body.append(lines[i])
                     i += 1
 
-                # Run the loop body
+                # Execute loop
                 for _ in range(count):
                     for body_line in loop_body:
                         self.run_line(body_line)
+
+                i += 1  # Skip "അവസാനം"
+                continue
+
+            # If condition: എങ്കിൽ var == "value" ... അവസാനം
+            if line.startswith("എങ്കിൽ "):
+                condition_str = line.replace("എങ്കിൽ ", "", 1).strip()
+
+                # Collect if body
+                if_body = []
+                i += 1
+                while i < len(lines) and lines[i].strip() != "അവസാനം":
+                    if_body.append(lines[i])
+                    i += 1
+
+                # Parse condition
+                try:
+                    left, right = condition_str.split("==", 1)
+                    left = left.strip()
+                    right = right.strip().strip('"')
+
+                    # Replace with var value if exists
+                    left_val = self.vars.get(left, left)
+                    if str(left_val) == right:
+                        for body_line in if_body:
+                            self.run_line(body_line)
+                except ValueError:
+                    self.output.append(f"❌ തെറ്റ്: '{condition_str}' ശരിയായ സ്ഥിതിയല്ല")
 
                 i += 1  # Skip "അവസാനം"
                 continue
