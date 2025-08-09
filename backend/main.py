@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from interpreter import MalayalamInterpreter
 from fastapi.middleware.cors import CORSMiddleware
+from routes import file_routes
 
 app = FastAPI()
 
@@ -23,3 +24,6 @@ def run_code(req: CodeRequest):
     result = interp.run(req.mlm_code)
     print(result)
     return {"output": result}
+
+
+app.include_router(file_routes.router)
