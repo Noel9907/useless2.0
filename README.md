@@ -94,7 +94,7 @@ Body: {
 
 # Video
 
-![App Vido](./v.mp4)
+[![Watch the video](./d.png)](https://youtu.be/ihJyEw82o4Y)
 
 # Additional Demos
 
