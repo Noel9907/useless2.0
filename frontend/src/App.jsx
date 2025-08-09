@@ -1,8 +1,7 @@
 // ===========================================
 // src/App.jsx
 // ===========================================
-
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 // Window, TextEditor, OutputWindow, and SettingsWindow are now defined within this file.
 // In a real project, they would be in their own files and imported.
@@ -130,11 +129,15 @@ const App = () => {
   });
   const [showNewFileModal, setShowNewFileModal] = useState(false);
   const [newFileName, setNewFileName] = useState("");
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameFileName, setRenameFileName] = useState("");
+  const [renameFileId, setRenameFileId] = useState(null);
   const [contextMenu, setContextMenu] = useState({
     visible: false,
     x: 0,
     y: 0,
     fileId: null,
+    type: null, // 'file' or 'desktop'
   });
 
   const windowsRef = useRef(windows);
@@ -145,14 +148,13 @@ const App = () => {
   useEffect(() => {
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
-
     // Fetch files for the new session on initial load
     fetchFiles(newSessionId);
   }, []);
 
   const fetchFiles = async (currentSessionId) => {
     try {
-      const response = await fetch(`http://localhost:8000/files?`);
+      const response = await fetch(`https://useless2-0.onrender.com/files?`);
       if (!response.ok) {
         throw new Error("Failed to fetch files from backend");
       }
@@ -191,6 +193,7 @@ const App = () => {
     const { id, startX, startY, initialX, initialY } = dragInfo;
     const newX = initialX + (e.clientX - startX);
     const newY = initialY + (e.clientY - startY);
+
     setWindows((prevWindows) =>
       prevWindows.map((win) =>
         win.id === id ? { ...win, position: { x: newX, y: newY } } : win
@@ -223,7 +226,9 @@ const App = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/files/${file.id}`);
+      const response = await fetch(
+        `https://useless2-0.onrender.com/files/${file.id}`
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch file content");
       }
@@ -240,6 +245,7 @@ const App = () => {
           y: 50 + windowsRef.current.length * 20,
         },
       };
+
       setWindows((prevWindows) => [...prevWindows, newWindow]);
       bringToFront(newWindow.id);
     } catch (error) {
@@ -276,19 +282,24 @@ const App = () => {
         session_id: sessionId,
       };
 
-      const response = await fetch(`http://localhost:8000/files/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `https://useless2-0.onrender.com/files/create`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
       const result = await response.json();
       if (!result.id) {
         throw new Error("API response is missing the file ID.");
       }
+
       const newFileId = result.id;
       const newFile = {
         id: newFileId,
@@ -320,15 +331,19 @@ const App = () => {
         content: newCode,
       };
 
-      const response = await fetch(`http://localhost:8000/files/${fileId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `https://useless2-0.onrender.com/files/${fileId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
       openOutputWindow("ഫയൽ വിജയകരമായി സേവ് ചെയ്തു.");
     } catch (error) {
       console.error("Failed to save file:", error);
@@ -340,17 +355,24 @@ const App = () => {
 
   const deleteFile = async (fileId) => {
     try {
-      const response = await fetch(`http://localhost:8000/files/${fileId}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `https://useless2-0.onrender.com/files/${fileId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
       // Remove the file from the local state
       setMlmFiles((prevFiles) =>
         prevFiles.filter((file) => file.id !== fileId)
       );
+
       openOutputWindow("ഫയൽ വിജയകരമായി ഡിലീറ്റ് ചെയ്തു.");
+
       // Close any open windows for this file
       setWindows((prevWindows) =>
         prevWindows.filter((win) => win.fileId !== fileId)
@@ -360,6 +382,67 @@ const App = () => {
       openOutputWindow(
         `Error: ${error.message}\n` + "ഫയൽ ഡിലീറ്റ് ചെയ്യാൻ കഴിഞ്ഞില്ല."
       );
+    }
+  };
+
+  const renameFile = async (fileId, newFilename) => {
+    try {
+      const payload = {
+        filename: newFilename,
+      };
+
+      const response = await fetch(
+        `https://useless2-0.onrender.com/files/${fileId}/rename`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      // Update the file in the local state
+      setMlmFiles((prevFiles) =>
+        prevFiles.map((file) =>
+          file.id === fileId ? { ...file, name: newFilename } : file
+        )
+      );
+
+      // Update any open windows for this file
+      setWindows((prevWindows) =>
+        prevWindows.map((win) =>
+          win.fileId === fileId ? { ...win, title: newFilename } : win
+        )
+      );
+
+      openOutputWindow("ഫയലിന്റെ പേര് വിജയകരമായി മാറ്റി.");
+    } catch (error) {
+      console.error("Failed to rename file:", error);
+      openOutputWindow(
+        `Error: ${error.message}\n` + "ഫയലിന്റെ പേര് മാറ്റാൻ കഴിഞ്ഞില്ല."
+      );
+    }
+  };
+
+  const handleRenameFile = () => {
+    if (!renameFileName) {
+      openOutputWindow("Error: File name cannot be empty.");
+      return;
+    }
+
+    renameFile(renameFileId, renameFileName);
+    setShowRenameModal(false);
+    setRenameFileName("");
+    setRenameFileId(null);
+  };
+
+  const refreshDesktop = () => {
+    if (sessionId) {
+      fetchFiles(sessionId);
+      openOutputWindow("ഡെസ്ക്ടോപ്പ് പുതുക്കി.");
     }
   };
 
@@ -374,6 +457,7 @@ const App = () => {
         y: 150 + windowsRef.current.length * 20,
       },
     };
+
     setWindows((prevWindows) => [...prevWindows, newWindow]);
     bringToFront(newWindow.id);
   };
@@ -386,6 +470,7 @@ const App = () => {
       bringToFront(existingWindow.id);
       return;
     }
+
     const newWindow = {
       id: crypto.randomUUID(),
       type: "settings",
@@ -396,6 +481,7 @@ const App = () => {
         y: 100 + windowsRef.current.length * 20,
       },
     };
+
     setWindows((prevWindows) => [...prevWindows, newWindow]);
     bringToFront(newWindow.id);
   };
@@ -403,15 +489,18 @@ const App = () => {
   const runCode = async (code, openOutputWindow) => {
     try {
       const payload = { mlm_code: code };
-      const apiUrl = `http://127.0.0.1:8000/run`;
+      const apiUrl = `https://useless2-0.onrender.com/run`;
+
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
       const result = await response.json();
       openOutputWindow(result.output);
     } catch (error) {
@@ -423,24 +512,49 @@ const App = () => {
     }
   };
 
-  const handleContextMenu = (e, fileId) => {
+  const handleFileContextMenu = (e, fileId) => {
     e.preventDefault();
-    e.stopPropagation(); // Stop propagation to prevent the desktop's onContextMenu from firing
+    e.stopPropagation();
     setContextMenu({
       visible: true,
       x: e.clientX,
       y: e.clientY,
       fileId,
+      type: "file",
+    });
+  };
+
+  const handleDesktopContextMenu = (e) => {
+    e.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      fileId: null,
+      type: "desktop",
     });
   };
 
   const handleMenuItemClick = (action) => {
     if (action === "delete") {
       const fileIdToDelete = contextMenu.fileId;
-
       deleteFile(fileIdToDelete);
+    } else if (action === "rename") {
+      const fileToRename = mlmFiles.find(
+        (file) => file.id === contextMenu.fileId
+      );
+      if (fileToRename) {
+        setRenameFileId(contextMenu.fileId);
+        setRenameFileName(fileToRename.name);
+        setShowRenameModal(true);
+      }
+    } else if (action === "refresh") {
+      refreshDesktop();
+    } else if (action === "newFile") {
+      handleNewFile();
     }
-    setContextMenu({ visible: false, x: 0, y: 0, fileId: null });
+
+    setContextMenu({ visible: false, x: 0, y: 0, fileId: null, type: null });
   };
 
   return (
@@ -448,18 +562,14 @@ const App = () => {
       ref={desktopRef}
       className="relative w-screen h-screen bg-cover bg-center font-inter select-none overflow-hidden"
       style={{
-        backgroundImage:
-          'url("https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=2670&auto=format&fit=crop")',
+        backgroundImage: `url("/os.jpg")`,
       }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onClick={() =>
-        setContextMenu({ visible: false, x: 0, y: 0, fileId: null })
+        setContextMenu({ visible: false, x: 0, y: 0, fileId: null, type: null })
       }
-      onContextMenu={(e) => {
-        e.preventDefault();
-        setContextMenu({ visible: false, x: 0, y: 0, fileId: null });
-      }}
+      onContextMenu={handleDesktopContextMenu}
     >
       {/* Updated desktop icon container with tighter spacing */}
       <div className="p-2 flex flex-col flex-wrap gap-x-1 gap-y-2 h-full content-start">
@@ -467,7 +577,7 @@ const App = () => {
           <div
             key={file.id}
             onClick={() => openEditor(file)}
-            onContextMenu={(e) => handleContextMenu(e, file.id)}
+            onContextMenu={(e) => handleFileContextMenu(e, file.id)}
             className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-20 text-white"
           >
             <div className="text-2xl">📝</div>
@@ -476,27 +586,49 @@ const App = () => {
             </span>
           </div>
         ))}
-        <div
-          onClick={handleNewFile}
-          className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-20 text-white"
-        >
-          <div className="text-2xl">➕</div>
-          <span className="text-xs text-center mt-1">പുതിയ ഫയൽ</span>
-        </div>
       </div>
+
+      {/* Context Menu */}
       {contextMenu.visible && (
         <div
-          className="absolute bg-gray-900 text-white rounded-md shadow-lg p-1 z-50"
+          className="absolute bg-gray-900 text-white rounded-md shadow-lg p-1 z-50 min-w-[150px]"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
-          <div
-            onClick={() => handleMenuItemClick("delete")}
-            className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
-          >
-            ❌ ഡിലീറ്റ് ചെയ്യുക
-          </div>
+          {contextMenu.type === "file" && (
+            <>
+              <div
+                onClick={() => handleMenuItemClick("rename")}
+                className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2"
+              >
+                ✏️ പേര് മാറ്റുക
+              </div>
+              <div
+                onClick={() => handleMenuItemClick("delete")}
+                className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2"
+              >
+                ❌ ഡിലീറ്റ് ചെയ്യുക
+              </div>
+            </>
+          )}
+          {contextMenu.type === "desktop" && (
+            <>
+              <div
+                onClick={() => handleMenuItemClick("refresh")}
+                className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2"
+              >
+                🔄 പുതുക്കുക
+              </div>
+              <div
+                onClick={() => handleMenuItemClick("newFile")}
+                className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2"
+              >
+                ➕ പുതിയ ഫയൽ
+              </div>
+            </>
+          )}
         </div>
       )}
+
       {windows.map((win, index) => (
         <Window
           key={win.id}
@@ -524,6 +656,8 @@ const App = () => {
           {win.type === "settings" && <SettingsWindow />}
         </Window>
       ))}
+
+      {/* New File Modal */}
       {showNewFileModal && (
         <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-80 text-white">
@@ -552,6 +686,41 @@ const App = () => {
           </div>
         </div>
       )}
+
+      {/* Rename File Modal */}
+      {showRenameModal && (
+        <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-80 text-white">
+            <h3 className="text-lg font-bold mb-4">ഫയലിന്റെ പേര് മാറ്റുക</h3>
+            <input
+              type="text"
+              value={renameFileName}
+              onChange={(e) => setRenameFileName(e.target.value)}
+              placeholder="പുതിയ പേര്"
+              className="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <div className="mt-4 flex justify-end space-x-2">
+              <button
+                onClick={() => {
+                  setShowRenameModal(false);
+                  setRenameFileName("");
+                  setRenameFileId(null);
+                }}
+                className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors"
+              >
+                റദ്ദാക്കുക
+              </button>
+              <button
+                onClick={handleRenameFile}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
+              >
+                പേര് മാറ്റുക
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="absolute bottom-0 left-0 right-0 h-10 bg-gray-900/80 backdrop-blur-md flex items-center justify-between px-4 text-white">
         <div className="flex items-center space-x-2">
           <button className="px-3 py-1 rounded-md hover:bg-blue-600 transition-colors">
