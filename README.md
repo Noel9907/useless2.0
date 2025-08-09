@@ -1,103 +1,154 @@
-"# Useless 2.0"
+# മലയാളം കോഡിംഗ് ലാംഗ്വേജ് (Malayalam Coding Language) 🎯
 
-POST `http://127.0.0.1:8000/run`
+## Basic Details
 
-body :
+### Team Name: The CodeFather
 
-{
-"mlm_code": "പേര് = \"നോവൽ\"\nപറയു പേര്\nവരിക്കു 2\nചായകട\nപറയു \"വേറെ ജോലി\""
+### Team Members
+
+- Team Lead: Noel S Kocheekkaran - CUCEK
+- Member 2: Shamil Niswan TKC - CUCEK
+
+### Project Description
+
+A revolutionary programming language that lets you code in Malayalam! Because why should English have all the fun? Now you can confuse your computer in your mother tongue while it pretends to understand what "ചായകട" means.
+
+### The Problem (that doesn't exist)
+
+Ever felt frustrated that you couldn't tell your computer "ചായ കുടിക്കുന്നു" and expect it to take a coffee break? Or wished you could write loops using "വരിക്കു" instead of boring old "for"? Well, neither did anyone else, but we solved it anyway!
+
+### The Solution (that nobody asked for)
+
+We created a Malayalam programming language interpreter that translates Malayalam keywords into actual code execution. Now you can write variables as "പേര്", print statements as "പറയു", and even make your program take tea breaks with "ചായകട"! It's like Google Translate met Python and decided to have a Malayalam baby.
+
+## Technical Details
+
+### Technologies/Components Used
+
+For Software:
+
+- **Languages used**: Python (FastAPI backend), JavaScript (potential frontend)
+- **Frameworks used**: FastAPI, Uvicorn
+- **Libraries used**: MongoDB (for file storage), Pydantic (data validation)
+- **Tools used**: VS Code, Postman (for API testing), MongoDB Compass
+
+For Hardware:
+
+- Standard computer with internet connection
+- Minimum 4GB RAM (for running the interpreter)
+- 100MB storage space
+
+### Implementation
+
+For Software:
+
+# Installation
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd malayalam-coding-language
+
+# Install dependencies
+pip install fastapi uvicorn pymongo
+
+# Start MongoDB (make sure MongoDB is installed)
+mongod
+
+# Run the server
+uvicorn main:app --reload
+```
+
+# Run
+
+```bash
+# Start the API server
+python main.py
+# or
+uvicorn main:app --host 127.0.0.1 --port 8000
+
+# The API will be available at http://127.0.0.1:8000
+```
+
+### Project Documentation
+
+For Software:
+
+# Screenshots (Add at least 3)
+
+![Screenshot1](add-your-api-testing-screenshot)
+_API testing in Postman showing Malayalam code execution with output "നോവൽ" and tea break functionality_
+
+![Screenshot2](add-your-code-editor-screenshot)
+_VS Code showing Malayalam source code with syntax like "പേര് = \"നോവൽ\"" and "പറയു പേര്"_
+
+![Screenshot3](add-your-mongodb-screenshot)
+_MongoDB database showing stored Malayalam code files with filenames ending in .mlm extension_
+
+# Diagrams
+
+![Workflow](add-your-architecture-diagram)
+_Architecture diagram showing: Client Request → FastAPI Server → Malayalam Parser → Code Execution → MongoDB Storage → Response_
+
+## API Endpoints
+
+### Execute Malayalam Code
+
+```
+POST http://127.0.0.1:8000/run
+Body: {
+  "mlm_code": "പേര് = \"നോവൽ\"\nപറയു പേര്\nവരിക്കു 2\nചായകട\nപറയു \"വേറെ ജോലി\""
 }
+```
 
-response :
+### File Management
 
-{
-"output": "നോവൽ\n[Loop started: 2 times]\n💻 പണി നടക്കുന്നു\n💻 പണി നടക്കുന്നു\n☕ ചായ കുടിക്കുന്നു... (5s break)\nവേറെ ജോലി"
-}
+- `POST /files/create` - Create new Malayalam file
+- `GET /files/:id` - Retrieve file by ID
+- `PUT /files/:id` - Update file content
+- `DELETE /files/:id` - Delete file
+- `PATCH /files/:id/rename` - Rename file
+- `GET /files` - List all files
 
-POST `http://localhost:8000/files/create`
+### Malayalam Keywords
 
-body :
+- `പേര്` = variable assignment
+- `പറയു` = print statement
+- `വരിക്കു` = loop (followed by number)
+- `ചായകട` = tea break (5 second pause)
+- `പ്രിന്റ്` = alternative print statement
 
-{
-"filename": "hello_world.mlm",
-"content": "പ്രിന്റ്('ഹെലോ')",
-"session_id": "user_123"
-}
+### Project Demo
 
-response :
-{
-"id": "6896e1db82d2612b5370d6e5"
-}
+# Video
 
-GET `http://localhost:8000/files/:id`
+[Add your demo video link here]
+_Video demonstrates writing Malayalam code, executing it through the API, and showing the hilarious output including tea breaks and Malayalam responses_
 
-response :
-{
-"filename": "hello_world.mlm",
-"content": "പ്രിന്റ്('ഹെലോ')",
-"session_id": "user_123"
-}
+# Additional Demos
 
-PUT `http://localhost:8000/files/:id`
+- Live coding session showing variable assignments in Malayalam
+- Demonstration of the tea break feature during loop execution
+- File management system storing .mlm files in MongoDB
 
-body :
-{
-"filename": "hello_world.mlm",
-"content": "പേര് = \"അപ്ഡേറ്റ് ചെയ്തു\"\nപറയു പേര്"
-}
+## Team Contributions
 
-response :
-{
-"message": "File updated successfully"
-}
+- **Noel S Kocheekkaran**: Backend development with FastAPI, Malayalam parser implementation, API endpoint design, MongoDB integration
+- **Shamil Niswan TKC**: Frontend development (if applicable), testing, documentation, Malayalam keyword mapping, user experience design
 
-GET `http://localhost:8000/files`
+---
 
-response :
-[
-{
-"id": "6896ed5612c2a30201b040f5",
-"filename": "hello_world.mlm",
-"created_at": "2025-08-09T06:40:22.536000"
-},
-{
-"id": "6896ed7012c2a30201b040f6",
-"filename": "hello_world.mlm",
-"created_at": "2025-08-09T06:40:48.253000"
-},
-{
-"id": "6896ed7112c2a30201b040f7",
-"filename": "hello_world.mlm",
-"created_at": "2025-08-09T06:40:49.275000"
-}
-]
+Made with ❤️ at TinkerHub Useless Projects
 
-GET http://localhost:8000/files/:id
-response :
+![Static Badge](https://img.shields.io/badge/TinkerHub-24?color=%23000000&link=https%3A%2F%2Fwww.tinkerhub.org%2F)
+![Static Badge](https://img.shields.io/badge/UselessProjects--25-25?link=https%3A%2F%2Fwww.tinkerhub.org%2Fevents%2FQ2Q1TQKX6Q%2FUseless%2520Projects)
 
-{
-"id": "6896ed5612c2a30201b040f5",
-"filename": "hello_world.mlm",
-"content": "പേര് = \"അപ്ഡേറ്റ് ചെയ്തു\"\nപറയു പേര്",
-"session_id": "user_123",
-"created_at": "2025-08-09T06:40:22.536000"
-}
+## Fun Features
 
-DELETE `http://localhost:8000/files/:id`
+- **Tea Breaks**: Your code can literally take a chai break with `ചായകട`
+- **Malayalam Variables**: Declare variables using `പേര്` instead of boring English
+- **Cultural Loops**: Use `വരിക്കു` to create loops that feel more natural
+- **File Storage**: Save your Malayalam masterpieces with `.mlm` extension
+- **REST API**: Full CRUD operations for your Malayalam code files
 
-response :
-{
-"message": "File deleted successfully"
-}
-
-PATCH `http://127.0.0.1:8000/files/:id/rename`
-
-body :
-{
-"filename": "new_file_name.txt"
-}
-
-response :
-{
-"message": "Filename updated successfully"
-}
+_Disclaimer: This project may cause uncontrollable laughter, confusion among your developer friends, and an inexplicable urge to teach your grandmother how to code._
