@@ -15,6 +15,7 @@ async def create_file(file: FileCreateRequest):
         "created_at": datetime.utcnow()
     }
     result = await files_collection.insert_one(file_doc)
+    print(result)
     return {"id": str(result.inserted_id)}
 
 @router.get("/files/{file_id}")
