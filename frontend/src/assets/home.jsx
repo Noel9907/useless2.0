@@ -5,14 +5,13 @@ const App = () => {
   const [windows, setWindows] = useState([]);
   const [mlmFiles, setMlmFiles] = useState([]);
   const [activeWindowId, setActiveWindowId] = useState(null);
-  const [sessionId, setSessionId] = useState(null);
   const desktopRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragInfo, setDragInfo] = useState({ id: null, startX: 0, startY: 0, initialX: 0, initialY: 0 });
 
   useEffect(() => {
-    // Generate a unique session ID when the app loads
-    setSessionId(crypto.randomUUID());
+    // Start with a new file on app load
+    handleNewFile();
   }, []);
 
   const handleMouseDown = (e, id, initialX, initialY) => {
@@ -55,94 +54,33 @@ const App = () => {
     });
   };
 
-  const openEditor = async (file) => {
+  const openEditor = (file) => {
     const existingWindow = windows.find(win => win.type === 'editor' && win.fileId === file.id);
     if (existingWindow) {
       bringToFront(existingWindow.id);
       return;
     }
 
-    try {
-      // Fetch the file content from the backend
-      const response = await fetch(`http://localhost:8000/files/${file.id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch file content');
-      }
-      const fileData = await response.json();
-      
-      const newWindow = {
-        id: crypto.randomUUID(),
-        type: 'editor',
-        title: fileData.filename,
-        content: fileData.content,
-        fileId: file.id,
-        position: { x: 50 + windows.length * 20, y: 50 + windows.length * 20 },
-      };
-      setWindows(prevWindows => [...prevWindows, newWindow]);
-      bringToFront(newWindow.id);
-
-    } catch (error) {
-      console.error('Error opening file:', error);
-      openOutputWindow(`Error: ${error.message}\n` + 'ഫയൽ തുറക്കാൻ കഴിഞ്ഞില്ല.');
-    }
+    const newWindow = {
+      id: crypto.randomUUID(),
+      type: 'editor',
+      title: file.name,
+      content: file.code,
+      fileId: file.id,
+      position: { x: 50 + windows.length * 20, y: 50 + windows.length * 20 },
+    };
+    setWindows(prevWindows => [...prevWindows, newWindow]);
+    bringToFront(newWindow.id);
   };
 
-  const handleNewFile = async () => {
-    if (!sessionId) {
-      openOutputWindow('Error: Session ID not available. Try reloading the page.');
-      return;
-    }
-
-    const defaultFilename = `പുതിയ ഫയൽ ${mlmFiles.length + 1}.mlm`;
-    const defaultContent = `പേര് = "ഹലോ ലോകം"\nപറയു പേര്\n`;
-
-    try {
-      // Create the file on the backend
-      const payload = {
-        filename: defaultFilename,
-        content: defaultContent,
-        session_id: sessionId,
-      };
-
-      console.log('Sending request to backend:', payload);
-
-      const response = await fetch(`http://localhost:8000/files/create`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      console.log('Backend response status:', response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response from backend:', errorText);
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('Backend response body:', result);
-
-      // Check if the response contains the 'id' field
-      if (!result.id) {
-        throw new Error('API response is missing the file ID.');
-      }
-
-      const newFileId = result.id;
-
-      const newFile = {
-        id: newFileId,
-        name: defaultFilename,
-        code: defaultContent,
-      };
-
-      setMlmFiles(prevFiles => [...prevFiles, newFile]);
-      openEditor(newFile);
-
-    } catch (error) {
-      console.error('Failed to create new file:', error);
-      openOutputWindow(`Error: ${error.message}\n` + 'പുതിയ ഫയൽ ഉണ്ടാക്കാൻ കഴിഞ്ഞില്ല.');
-    }
+  const handleNewFile = () => {
+    const newFile = {
+      id: crypto.randomUUID(),
+      name: `പുതിയ ഫയൽ ${mlmFiles.length + 1}.mlm`,
+      code: `പേര് = "ഹലോ ലോകം"\nപറയു പേര്\n`,
+    };
+    setMlmFiles(prevFiles => [...prevFiles, newFile]);
+    openEditor(newFile);
   };
 
   const handleClose = (id) => {
@@ -150,8 +88,6 @@ const App = () => {
     setActiveWindowId(null);
   };
 
-  // This function now only updates the local state.
-  // A proper `PUT` or `PATCH` endpoint would be needed to save changes to an existing file.
   const updateFileCode = (fileId, newCode) => {
     setMlmFiles(prevFiles => prevFiles.map(file =>
       file.id === fileId ? { ...file, code: newCode } : file
@@ -169,26 +105,6 @@ const App = () => {
     setWindows(prevWindows => [...prevWindows, newWindow]);
     bringToFront(newWindow.id);
   };
-
-  // Function to open the settings window
-  const openSettingsWindow = () => {
-    const existingWindow = windows.find(win => win.type === 'settings');
-    if (existingWindow) {
-      bringToFront(existingWindow.id);
-      return;
-    }
-
-    const newWindow = {
-      id: crypto.randomUUID(),
-      type: 'settings',
-      title: 'ക്രമീകരണങ്ങൾ',
-      content: '', // Settings window doesn't need content initially
-      position: { x: 150 + windows.length * 20, y: 100 + windows.length * 20 },
-    };
-    setWindows(prevWindows => [...prevWindows, newWindow]);
-    bringToFront(newWindow.id);
-  };
-
 
   return (
     <div
@@ -225,7 +141,7 @@ const App = () => {
           key={win.id}
           id={win.id}
           title={win.title}
-          position={win.position}
+          initialPosition={win.position}
           onClose={handleClose}
           onMouseDown={(e, x, y) => handleMouseDown(e, win.id, x, y)}
           onFocus={() => bringToFront(win.id)}
@@ -243,23 +159,14 @@ const App = () => {
           {win.type === 'output' && (
             <OutputWindow output={win.content} />
           )}
-          {win.type === 'settings' && (
-            <SettingsWindow />
-          )}
         </Window>
       ))}
 
       {/* Taskbar */}
       <div className="absolute bottom-0 left-0 right-0 h-10 bg-gray-900/80 backdrop-blur-md flex items-center justify-between px-4 text-white">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center">
           <button className="px-3 py-1 rounded-md hover:bg-blue-600 transition-colors">
             🚀 സ്റ്റാർട്ട്
-          </button>
-          <button
-            onClick={openSettingsWindow}
-            className="px-3 py-1 rounded-md hover:bg-gray-700 transition-colors"
-          >
-            ⚙️ ക്രമീകരണങ്ങൾ
           </button>
         </div>
         <div>
@@ -270,9 +177,13 @@ const App = () => {
   );
 };
 
-const Window = ({ id, title, children, position, onClose, onMouseDown, onFocus, isActive }) => {
+const Window = ({ id, title, children, initialPosition, onClose, onMouseDown, onFocus, isActive }) => {
+  const [position, setPosition] = useState(initialPosition);
+  const windowRef = useRef(null);
+
   return (
     <div
+      ref={windowRef}
       onMouseDown={onFocus}
       className={`absolute w-[600px] h-[400px] flex flex-col bg-gray-800/90 backdrop-blur-lg rounded-lg shadow-2xl overflow-hidden transition-shadow duration-200 ${isActive ? 'shadow-blue-500/50 border border-blue-500' : 'border border-gray-700'}`}
       style={{
@@ -340,16 +251,6 @@ const OutputWindow = ({ output }) => {
       <pre className="text-white font-mono whitespace-pre-wrap text-sm">
         {output}
       </pre>
-    </div>
-  );
-};
-
-const SettingsWindow = () => {
-  return (
-    <div className="p-4 text-white">
-      <h2 className="text-xl font-bold mb-4">ക്രമീകരണങ്ങൾ</h2>
-      <p>ഇതൊരു ഡെമോ ക്രമീകരണ വിൻഡോ ആണ്. ഇവിടെ നിങ്ങൾക്ക് നിങ്ങളുടെ ഓപ്പറേറ്റിംഗ് സിസ്റ്റത്തിന്റെ ക്രമീകരണങ്ങൾ മാറ്റാൻ കഴിയും.</p>
-      {/* You can add your settings options here */}
     </div>
   );
 };
