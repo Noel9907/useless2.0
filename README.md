@@ -82,3 +82,10 @@ response :
 "session_id": "user_123",
 "created_at": "2025-08-09T06:40:22.536000"
 }
+
+DELETE `http://localhost:8000/files/:id`
+
+response :
+{
+"message": "File deleted successfully"
+}

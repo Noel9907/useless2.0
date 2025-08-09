@@ -74,7 +74,7 @@ async def update_file(file_id: str, update: FileUpdateRequest):
 
     return {"message": "File updated successfully"}
 
-@router.delete("/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/files/{file_id}", status_code=status.HTTP_200_OK)
 async def delete_file(file_id: str):
     result = await files_collection.delete_one({"_id": ObjectId(file_id)})
 
