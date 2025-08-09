@@ -1,4 +1,4 @@
-# മലയാളം കോഡിംഗ് ലാംഗ്വേജ് (Malayalam Coding Language) 🎯
+# മലമ്പാമ്പ് (Malampamp) Programming Language 🐍🎯
 
 ## Basic Details
 
@@ -11,7 +11,7 @@
 
 ### Project Description
 
-A revolutionary programming language that lets you code in Malayalam! Because why should English have all the fun? Now you can confuse your computer in your mother tongue while it pretends to understand what "ചായകട" means.
+A revolutionary programming language called **മലമ്പാമ്പ്** that lets you code in Malayalam! Because why should English have all the fun? Now you can confuse your computer in your mother tongue while it pretends to understand what "ചായകട" means.
 
 ### The Problem (that doesn't exist)
 
@@ -19,7 +19,7 @@ Ever felt frustrated that you couldn't tell your computer "ചായ കുട�
 
 ### The Solution (that nobody asked for)
 
-We created a Malayalam programming language interpreter that translates Malayalam keywords into actual code execution. Now you can write variables as "പേര്", print statements as "പറയു", and even make your program take tea breaks with "ചായകട"! It's like Google Translate met Python and decided to have a Malayalam baby.
+We created **മലമ്പാമ്പ്**, a Malayalam programming language interpreter that translates Malayalam keywords into actual code execution. Now you can write variables as "പേര്", print statements as "പറയു", and even make your program take tea breaks with "ചായകട"! It's like Google Translate met Python and decided to have a Malayalam baby with a really cool name.
 
 ## Technical Details
 
@@ -47,7 +47,7 @@ For Software:
 ```bash
 # Clone the repository
 git clone <your-repo-url>
-cd malayalam-coding-language
+cd malampamp-programming-language
 
 # Install dependencies
 pip install fastapi uvicorn pymongo
@@ -80,19 +80,19 @@ For Software:
 _API testing in Postman showing Malayalam code execution with output "നോവൽ" and tea break functionality_
 
 ![Screenshot2](add-your-code-editor-screenshot)
-_VS Code showing Malayalam source code with syntax like "പേര് = \"നോവൽ\"" and "പറയു പേര്"_
+_VS Code showing മലമ്പാമ്പ് source code with syntax like "പേര് = \"നോവൽ\"" and "പറയു പേര്"_
 
 ![Screenshot3](add-your-mongodb-screenshot)
-_MongoDB database showing stored Malayalam code files with filenames ending in .mlm extension_
+_MongoDB database showing stored മലമ്പാമ്പ് code files with filenames ending in .mlm extension_
 
 # Diagrams
 
 ![Workflow](add-your-architecture-diagram)
-_Architecture diagram showing: Client Request → FastAPI Server → Malayalam Parser → Code Execution → MongoDB Storage → Response_
+_Architecture diagram showing: Client Request → FastAPI Server → മലമ്പാമ്പ് Parser → Code Execution → MongoDB Storage → Response_
 
 ## API Endpoints
 
-### Execute Malayalam Code
+### Execute മലമ്പാമ്പ് Code
 
 ```
 POST http://127.0.0.1:8000/run
@@ -103,14 +103,14 @@ Body: {
 
 ### File Management
 
-- `POST /files/create` - Create new Malayalam file
+- `POST /files/create` - Create new മലമ്പാമ്പ് file
 - `GET /files/:id` - Retrieve file by ID
 - `PUT /files/:id` - Update file content
 - `DELETE /files/:id` - Delete file
 - `PATCH /files/:id/rename` - Rename file
 - `GET /files` - List all files
 
-### Malayalam Keywords
+### മലമ്പാമ്പ് Keywords
 
 - `പേര്` = variable assignment
 - `പറയു` = print statement
@@ -123,18 +123,18 @@ Body: {
 # Video
 
 [Add your demo video link here]
-_Video demonstrates writing Malayalam code, executing it through the API, and showing the hilarious output including tea breaks and Malayalam responses_
+_Video demonstrates writing മലമ്പാമ്പ് code, executing it through the API, and showing the hilarious output including tea breaks and Malayalam responses_
 
 # Additional Demos
 
-- Live coding session showing variable assignments in Malayalam
+- Live coding session showing മലമ്പാമ്പ് code writing
 - Demonstration of the tea break feature during loop execution
 - File management system storing .mlm files in MongoDB
 
 ## Team Contributions
 
-- **Noel S Kocheekkaran**: Backend development with FastAPI, Malayalam parser implementation, API endpoint design, MongoDB integration
-- **Shamil Niswan TKC**: Frontend development (if applicable), testing, documentation, Malayalam keyword mapping, user experience design
+- **Noel S Kocheekkaran**: Backend development with FastAPI, മലമ്പാമ്പ് parser implementation, API endpoint design, MongoDB integration
+- **Shamil Niswan TKC**: Frontend development (if applicable), testing, documentation, മലമ്പാമ്പ് keyword mapping, user experience design
 
 ---
 
@@ -148,7 +148,7 @@ Made with ❤️ at TinkerHub Useless Projects
 - **Tea Breaks**: Your code can literally take a chai break with `ചായകട`
 - **Malayalam Variables**: Declare variables using `പേര്` instead of boring English
 - **Cultural Loops**: Use `വരിക്കു` to create loops that feel more natural
-- **File Storage**: Save your Malayalam masterpieces with `.mlm` extension
-- **REST API**: Full CRUD operations for your Malayalam code files
+- **File Storage**: Save your മലമ്പാമ്പ് masterpieces with `.mlm` extension
+- **REST API**: Full CRUD operations for your മലമ്പാമ്പ് code files
 
 _Disclaimer: This project may cause uncontrollable laughter, confusion among your developer friends, and an inexplicable urge to teach your grandmother how to code._
