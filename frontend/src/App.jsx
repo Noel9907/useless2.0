@@ -2,30 +2,17 @@
 // src/App.jsx
 // ===========================================
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from 'react';
 
 // Window, TextEditor, OutputWindow, and SettingsWindow are now defined within this file.
 // In a real project, they would be in their own files and imported.
 // For this single-file solution, they are defined here to avoid the "Multiple exports" error.
 
-const Window = ({
-  id,
-  title,
-  children,
-  position,
-  onClose,
-  onMouseDown,
-  onFocus,
-  isActive,
-}) => {
+const Window = ({ id, title, children, position, onClose, onMouseDown, onFocus, isActive }) => {
   return (
     <div
       onMouseDown={onFocus}
-      className={`absolute w-[600px] h-[400px] flex flex-col bg-gray-800/90 backdrop-blur-lg rounded-lg shadow-2xl overflow-hidden transition-shadow duration-200 ${
-        isActive
-          ? "shadow-blue-500/50 border border-blue-500"
-          : "border border-gray-700"
-      }`}
+      className={`absolute w-[600px] h-[400px] flex flex-col bg-gray-800/90 backdrop-blur-lg rounded-lg shadow-2xl overflow-hidden transition-shadow duration-200 ${isActive ? 'shadow-blue-500/50 border border-blue-500' : 'border border-gray-700'}`}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -40,29 +27,23 @@ const Window = ({
           onClick={() => onClose(id)}
           className="bg-red-500 hover:bg-red-600 w-4 h-4 rounded-full flex items-center justify-center"
         >
-          <svg
-            className="w-2 h-2 text-white"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-              clipRule="evenodd"
-            />
+          <svg className="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
         </button>
       </div>
-      <div className="flex-grow p-1 overflow-auto">{children}</div>
+      <div className="flex-grow p-1 overflow-auto">
+        {children}
+      </div>
     </div>
   );
 };
 
 const TextEditor = ({ fileId, filename, initialCode, onRun, onSave }) => {
-  const [code, setCode] = useState(initialCode);
+  const [code, setCode] = useState(initialCode || '');
 
   useEffect(() => {
-    setCode(initialCode);
+    setCode(initialCode || '');
   }, [initialCode]);
 
   return (
@@ -106,13 +87,11 @@ const SettingsWindow = () => {
   return (
     <div className="p-4 text-white">
       <h2 className="text-xl font-bold mb-4">ക്രമീകരണങ്ങൾ</h2>
-      <p>
-        ഇതൊരു ഡെമോ ക്രമീകരണ വിൻഡോ ആണ്. ഇവിടെ നിങ്ങൾക്ക് നിങ്ങളുടെ ഓപ്പറേറ്റിംഗ്
-        സിസ്റ്റത്തിന്റെ ക്രമീകരണങ്ങൾ മാറ്റാൻ കഴിയും.
-      </p>
+      <p>ഇതൊരു ഡെമോ ക്രമീകരണ വിൻഡോ ആണ്. ഇവിടെ നിങ്ങൾക്ക് നിങ്ങളുടെ ഓപ്പറേറ്റിംഗ് സിസ്റ്റത്തിന്റെ ക്രമീകരണങ്ങൾ മാറ്റാൻ കഴിയും.</p>
     </div>
   );
 };
+
 
 const App = () => {
   const [windows, setWindows] = useState([]);
@@ -121,15 +100,10 @@ const App = () => {
   const [sessionId, setSessionId] = useState(null);
   const desktopRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [dragInfo, setDragInfo] = useState({
-    id: null,
-    startX: 0,
-    startY: 0,
-    initialX: 0,
-    initialY: 0,
-  });
+  const [dragInfo, setDragInfo] = useState({ id: null, startX: 0, startY: 0, initialX: 0, initialY: 0 });
   const [showNewFileModal, setShowNewFileModal] = useState(false);
-  const [newFileName, setNewFileName] = useState("");
+  const [newFileName, setNewFileName] = useState('');
+  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, fileId: null });
 
   const windowsRef = useRef(windows);
   useEffect(() => {
@@ -139,33 +113,26 @@ const App = () => {
   useEffect(() => {
     const newSessionId = crypto.randomUUID();
     setSessionId(newSessionId);
-
+    
     // Fetch files for the new session on initial load
     fetchFiles(newSessionId);
   }, []);
 
   const fetchFiles = async (currentSessionId) => {
     try {
-      const response = await fetch(
-        `http://localhost:8000/files?session_id=${currentSessionId}`
-      );
+      const response = await fetch(`http://localhost:8000/files?session_id=${currentSessionId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch files from backend");
+        throw new Error('Failed to fetch files from backend');
       }
       const files = await response.json();
-      setMlmFiles(
-        files.map((file) => ({
-          id: file.id,
-          name: file.filename,
-          code: "",
-        }))
-      );
+      setMlmFiles(files.map(file => ({
+        id: file.id,
+        name: file.filename,
+        code: '',
+      })));
     } catch (error) {
-      console.error("Error fetching files:", error);
-      openOutputWindow(
-        `Error: ${error.message}\n` +
-          "ബാക്കെൻഡിൽ നിന്ന് ഫയലുകൾ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല."
-      );
+      console.error('Error fetching files:', error);
+      openOutputWindow(`Error: ${error.message}\n` + 'ബാക്കെൻഡിൽ നിന്ന് ഫയലുകൾ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല.');
     }
   };
 
@@ -187,11 +154,9 @@ const App = () => {
     const { id, startX, startY, initialX, initialY } = dragInfo;
     const newX = initialX + (e.clientX - startX);
     const newY = initialY + (e.clientY - startY);
-    setWindows((prevWindows) =>
-      prevWindows.map((win) =>
-        win.id === id ? { ...win, position: { x: newX, y: newY } } : win
-      )
-    );
+    setWindows(prevWindows => prevWindows.map(win =>
+      win.id === id ? { ...win, position: { x: newX, y: newY } } : win
+    ));
   };
 
   const handleMouseUp = () => {
@@ -201,18 +166,16 @@ const App = () => {
 
   const bringToFront = (id) => {
     setActiveWindowId(id);
-    setWindows((prevWindows) => {
-      const windowToMove = prevWindows.find((win) => win.id === id);
+    setWindows(prevWindows => {
+      const windowToMove = prevWindows.find(win => win.id === id);
       if (!windowToMove) return prevWindows;
-      const otherWindows = prevWindows.filter((win) => win.id !== id);
+      const otherWindows = prevWindows.filter(win => win.id !== id);
       return [...otherWindows, windowToMove];
     });
   };
 
   const openEditor = async (file) => {
-    const existingWindow = windowsRef.current.find(
-      (win) => win.type === "editor" && win.fileId === file.id
-    );
+    const existingWindow = windowsRef.current.find(win => win.type === 'editor' && win.fileId === file.id);
     if (existingWindow) {
       bringToFront(existingWindow.id);
       return;
@@ -221,28 +184,24 @@ const App = () => {
     try {
       const response = await fetch(`http://localhost:8000/files/${file.id}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch file content");
+        throw new Error('Failed to fetch file content');
       }
       const fileData = await response.json();
-
+      
       const newWindow = {
         id: crypto.randomUUID(),
-        type: "editor",
+        type: 'editor',
         title: fileData.filename,
         content: fileData.content,
         fileId: file.id,
-        position: {
-          x: 50 + windowsRef.current.length * 20,
-          y: 50 + windowsRef.current.length * 20,
-        },
+        position: { x: 50 + windowsRef.current.length * 20, y: 50 + windowsRef.current.length * 20 },
       };
-      setWindows((prevWindows) => [...prevWindows, newWindow]);
+      setWindows(prevWindows => [...prevWindows, newWindow]);
       bringToFront(newWindow.id);
+
     } catch (error) {
-      console.error("Error opening file:", error);
-      openOutputWindow(
-        `Error: ${error.message}\n` + "ഫയൽ തുറക്കാൻ കഴിഞ്ഞില്ല."
-      );
+      console.error('Error opening file:', error);
+      openOutputWindow(`Error: ${error.message}\n` + 'ഫയൽ തുറക്കാൻ കഴിഞ്ഞില്ല.');
     }
   };
 
@@ -252,14 +211,12 @@ const App = () => {
 
   const handleSaveNewFile = async () => {
     if (!sessionId) {
-      openOutputWindow(
-        "Error: Session ID not available. Try reloading the page."
-      );
+      openOutputWindow('Error: Session ID not available. Try reloading the page.');
       return;
     }
-
+    
     if (!newFileName) {
-      openOutputWindow("Error: File name cannot be empty.");
+      openOutputWindow('Error: File name cannot be empty.');
       return;
     }
 
@@ -273,8 +230,8 @@ const App = () => {
       };
 
       const response = await fetch(`http://localhost:8000/files/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
@@ -283,7 +240,7 @@ const App = () => {
       }
       const result = await response.json();
       if (!result.id) {
-        throw new Error("API response is missing the file ID.");
+        throw new Error('API response is missing the file ID.');
       }
       const newFileId = result.id;
       const newFile = {
@@ -292,20 +249,19 @@ const App = () => {
         code: defaultContent,
       };
 
-      setMlmFiles((prevFiles) => [...prevFiles, newFile]);
+      setMlmFiles(prevFiles => [...prevFiles, newFile]);
       openEditor(newFile);
-      setNewFileName("");
+      setNewFileName('');
       setShowNewFileModal(false);
+
     } catch (error) {
-      console.error("Failed to create new file:", error);
-      openOutputWindow(
-        `Error: ${error.message}\n` + "പുതിയ ഫയൽ ഉണ്ടാക്കാൻ കഴിഞ്ഞില്ല."
-      );
+      console.error('Failed to create new file:', error);
+      openOutputWindow(`Error: ${error.message}\n` + 'പുതിയ ഫയൽ ഉണ്ടാക്കാൻ കഴിഞ്ഞില്ല.');
     }
   };
 
   const handleClose = (id) => {
-    setWindows((prevWindows) => prevWindows.filter((win) => win.id !== id));
+    setWindows(prevWindows => prevWindows.filter(win => win.id !== id));
     setActiveWindowId(null);
   };
 
@@ -315,59 +271,68 @@ const App = () => {
         filename: filename,
         content: newCode,
       };
-
+      
       const response = await fetch(`http://localhost:8000/files/${fileId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-
+      
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       openOutputWindow("ഫയൽ വിജയകരമായി സേവ് ചെയ്തു.");
     } catch (error) {
-      console.error("Failed to save file:", error);
-      openOutputWindow(
-        `Error: ${error.message}\n` + "ഫയൽ സേവ് ചെയ്യാൻ കഴിഞ്ഞില്ല."
-      );
+      console.error('Failed to save file:', error);
+      openOutputWindow(`Error: ${error.message}\n` + 'ഫയൽ സേവ് ചെയ്യാൻ കഴിഞ്ഞില്ല.');
+    }
+  };
+
+  const deleteFile = async (fileId) => {
+    try {
+      const response = await fetch(`http://localhost:8000/files/${fileId}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      // Remove the file from the local state
+      setMlmFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
+      openOutputWindow("ഫയൽ വിജയകരമായി ഡിലീറ്റ് ചെയ്തു.");
+      // Close any open windows for this file
+      setWindows(prevWindows => prevWindows.filter(win => win.fileId !== fileId));
+    } catch (error) {
+      console.error('Failed to delete file:', error);
+      openOutputWindow(`Error: ${error.message}\n` + 'ഫയൽ ഡിലീറ്റ് ചെയ്യാൻ കഴിഞ്ഞില്ല.');
     }
   };
 
   const openOutputWindow = (output) => {
     const newWindow = {
       id: crypto.randomUUID(),
-      type: "output",
-      title: "ഫലം",
+      type: 'output',
+      title: 'ഫലം',
       content: output,
-      position: {
-        x: 300 + windowsRef.current.length * 20,
-        y: 150 + windowsRef.current.length * 20,
-      },
+      position: { x: 300 + windowsRef.current.length * 20, y: 150 + windowsRef.current.length * 20 },
     };
-    setWindows((prevWindows) => [...prevWindows, newWindow]);
+    setWindows(prevWindows => [...prevWindows, newWindow]);
     bringToFront(newWindow.id);
   };
 
   const openSettingsWindow = () => {
-    const existingWindow = windowsRef.current.find(
-      (win) => win.type === "settings"
-    );
+    const existingWindow = windowsRef.current.find(win => win.type === 'settings');
     if (existingWindow) {
       bringToFront(existingWindow.id);
       return;
     }
     const newWindow = {
       id: crypto.randomUUID(),
-      type: "settings",
-      title: "ക്രമീകരണങ്ങൾ",
-      content: "",
-      position: {
-        x: 150 + windowsRef.current.length * 20,
-        y: 100 + windowsRef.current.length * 20,
-      },
+      type: 'settings',
+      title: 'ക്രമീകരണങ്ങൾ',
+      content: '',
+      position: { x: 150 + windowsRef.current.length * 20, y: 100 + windowsRef.current.length * 20 },
     };
-    setWindows((prevWindows) => [...prevWindows, newWindow]);
+    setWindows(prevWindows => [...prevWindows, newWindow]);
     bringToFront(newWindow.id);
   };
 
@@ -376,8 +341,8 @@ const App = () => {
       const payload = { mlm_code: code };
       const apiUrl = `http://127.0.0.1:8000/run`;
       const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
@@ -386,48 +351,80 @@ const App = () => {
       const result = await response.json();
       openOutputWindow(result.output);
     } catch (error) {
-      console.error("Failed to run code:", error);
-      openOutputWindow(
-        `Error: ${error.message}\n` +
-          "നിങ്ങളുടെ ബാക്കെൻഡ് പ്രവർത്തിക്കുന്നുണ്ടോയെന്ന് ഉറപ്പാക്കുക."
-      );
+      console.error('Failed to run code:', error);
+      openOutputWindow(`Error: ${error.message}\n` + 'നിങ്ങളുടെ ബാക്കെൻഡ് പ്രവർത്തിക്കുന്നുണ്ടോയെന്ന് ഉറപ്പാക്കുക.');
     }
   };
+
+  const handleContextMenu = (e, fileId) => {
+    e.preventDefault();
+    e.stopPropagation(); // Stop propagation to prevent the desktop's onContextMenu from firing
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      fileId,
+    });
+  };
+
+  const handleMenuItemClick = (action) => {
+    if (action === 'delete') {
+      const fileIdToDelete = contextMenu.fileId;
+      
+        deleteFile(fileIdToDelete);
+      
+    }
+    setContextMenu({ visible: false, x: 0, y: 0, fileId: null });
+  };
+
 
   return (
     <div
       ref={desktopRef}
       className="relative w-screen h-screen bg-cover bg-center font-inter select-none overflow-hidden"
-      style={{
-        backgroundImage:
-          'url("https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=2670&auto=format&fit=crop")',
-      }}
+      style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=2670&auto=format&fit=crop")' }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onClick={() => setContextMenu({ visible: false, x: 0, y: 0, fileId: null })}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        setContextMenu({ visible: false, x: 0, y: 0, fileId: null });
+      }}
     >
-      <div className="p-4 grid grid-flow-col auto-rows-[100px] gap-4 h-screen">
-        {mlmFiles.map((file) => (
+      {/* Updated desktop icon container with tighter spacing */}
+      <div className="p-2 flex flex-col flex-wrap gap-x-1 gap-y-2 h-full content-start">
+        {mlmFiles.map(file => (
           <div
             key={file.id}
             onClick={() => openEditor(file)}
-            className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-800/50 cursor-pointer w-24 text-white"
+            onContextMenu={(e) => handleContextMenu(e, file.id)}
+            className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-20 text-white"
           >
-            <div className="text-3xl">📝</div>
-            <span className="text-sm text-center mt-1 truncate">
-              {file.name}
-            </span>
+            <div className="text-2xl">📝</div>
+            <span className="text-xs text-center mt-1 truncate w-full">{file.name}</span>
           </div>
         ))}
-
         <div
-          onClick={handleNewFile}
-          className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-800/50 cursor-pointer w-24 text-white"
+            onClick={handleNewFile}
+            className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-20 text-white"
         >
-          <div className="text-3xl">➕</div>
-          <span className="text-sm text-center mt-1">പുതിയ ഫയൽ</span>
+            <div className="text-2xl">➕</div>
+            <span className="text-xs text-center mt-1">പുതിയ ഫയൽ</span>
         </div>
       </div>
-
+      {contextMenu.visible && (
+        <div
+          className="absolute bg-gray-900 text-white rounded-md shadow-lg p-1 z-50"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+        >
+          <div
+            onClick={() => handleMenuItemClick('delete')}
+            className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md"
+          >
+            ❌ ഡിലീറ്റ് ചെയ്യുക
+          </div>
+        </div>
+      )}
       {windows.map((win, index) => (
         <Window
           key={win.id}
@@ -440,19 +437,21 @@ const App = () => {
           isActive={activeWindowId === win.id}
           style={{ zIndex: index + 1 }}
         >
-          {win.type === "editor" && (
+          {win.type === 'editor' && (
             <TextEditor
               fileId={win.fileId}
               filename={win.title}
               initialCode={win.content}
               onRun={(code) => runCode(code, openOutputWindow)}
-              onSave={(fileId, filename, code) =>
-                saveFile(fileId, filename, code)
-              }
+              onSave={(fileId, filename, code) => saveFile(fileId, filename, code)}
             />
           )}
-          {win.type === "output" && <OutputWindow output={win.content} />}
-          {win.type === "settings" && <SettingsWindow />}
+          {win.type === 'output' && (
+            <OutputWindow output={win.content} />
+          )}
+          {win.type === 'settings' && (
+            <SettingsWindow />
+          )}
         </Window>
       ))}
       {showNewFileModal && (
@@ -496,12 +495,7 @@ const App = () => {
           </button>
         </div>
         <div>
-          <span className="text-sm">
-            {new Date().toLocaleTimeString("ml-IN", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </span>
+          <span className="text-sm">{new Date().toLocaleTimeString('ml-IN', { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
       </div>
     </div>
