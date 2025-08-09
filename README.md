@@ -96,12 +96,6 @@ Body: {
 
 [![Watch the video]](https://github.com/user-attachments/assets/655ed194-d68c-44fd-955e-81171b670e76)
 
-# Additional Demos
-
-- Live coding session showing മലമ്പാമ്പ് code writing
-- Demonstration of the tea break feature during loop execution
-- File management system storing .mlm files in MongoDB
-
 ## Team Contributions
 
 - **Noel S Kocheekkaran**: Backend development with FastAPI, മലമ്പാമ്പ് parser implementation, API endpoint design, MongoDB integration
