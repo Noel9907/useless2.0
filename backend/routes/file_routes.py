@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException,status
 from models.schemas import FileCreateRequest
 from db.mongodb import files_collection
 from datetime import datetime
@@ -73,3 +73,11 @@ async def update_file(file_id: str, update: FileUpdateRequest):
         raise HTTPException(status_code=404, detail="File not found")
 
     return {"message": "File updated successfully"}
+
+@router.delete("/files/{file_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_file(file_id: str):
+    result = await files_collection.delete_one({"_id": ObjectId(file_id)})
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="File not found")
+    return {"message": "File deleted successfully"}
