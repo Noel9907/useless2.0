@@ -97,7 +97,7 @@ Body: {
 
 # Video
 
-[![Watch the video]](https://github.com/user-attachments/assets/655ed194-d68c-44fd-955e-81171b670e76)
+[![Watch the video]](https://github.com/user-attachments/assets/02902806-0e1c-4498-9b5d-3ebeb6359be9)
 
 ## Team Contributions
 

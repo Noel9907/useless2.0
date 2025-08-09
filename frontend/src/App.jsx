@@ -179,9 +179,74 @@ const SettingsWindow = () => {
   );
 };
 
-// New Learning Window Component
+// New Learning Window Component with Copy Functionality
 const LearningWindow = () => {
   const [activeTab, setActiveTab] = useState("basics");
+  const [copiedText, setCopiedText] = useState("");
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedText("Copied!");
+      setTimeout(() => setCopiedText(""), 2000);
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      setCopiedText("Copied!");
+      setTimeout(() => setCopiedText(""), 2000);
+    }
+  };
+
+  const extractCodeBlocks = (content) => {
+    const lines = content.split("\n");
+    const codeBlocks = [];
+    let currentBlock = [];
+    let inCodeBlock = false;
+    let blockTitle = "";
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      if (line.startsWith("## ") && !line.includes("(")) {
+        if (currentBlock.length > 0) {
+          codeBlocks.push({
+            title: blockTitle,
+            code: currentBlock.join("\n").trim(),
+          });
+          currentBlock = [];
+        }
+        blockTitle = line.replace("## ", "");
+        inCodeBlock = true;
+      } else if (line.startsWith("#") && line.includes("Translation:")) {
+        inCodeBlock = false;
+      } else if (line.startsWith("---")) {
+        if (currentBlock.length > 0) {
+          codeBlocks.push({
+            title: blockTitle,
+            code: currentBlock.join("\n").trim(),
+          });
+          currentBlock = [];
+        }
+        inCodeBlock = false;
+      } else if (inCodeBlock && line.trim() && !line.startsWith("#")) {
+        currentBlock.push(line);
+      }
+    }
+
+    if (currentBlock.length > 0) {
+      codeBlocks.push({
+        title: blockTitle,
+        code: currentBlock.join("\n").trim(),
+      });
+    }
+
+    return codeBlocks;
+  };
 
   const syntaxExamples = {
     basics: {
@@ -315,11 +380,12 @@ const LearningWindow = () => {
 # ഡാറ്റാ ടൈപ്പുകൾ (Data Types)
 
 ## സ്ട്രിംഗുകൾ (Strings)
-# എല്ലാ വാല്യൂകളും സ്ട്രിംഗ് ആയി സ്റ്റോർ ചെയ്യപ്പെടുന്നു
 പേര് = "മലയാളം"
 വാചകം = "ഇത് ഒരു വാചകമാണ്"
 സംഖ്യ = "42"
 ദശാംശം = "3.14"
+
+---
 
 ## സ്ട്രിംഗ് ഉദാഹരണങ്ങൾ
 പുസ്തകം = "രാമായണം"
@@ -327,17 +393,23 @@ const LearningWindow = () => {
 പറയു "പുസ്തകം: {പുസ്തകം}"
 പറയു "രചയിതാവ്: {രചയിതാവ്}"
 
+---
+
 ## നമ്പറുകൾ (സ്ട്രിംഗ് ആയി)
 എണ്ണം = "10"
 വില = "500"
 പറയു "എണ്ണം: {എണ്ണം}"
 പറയു "വില: {വില} രൂപ"
 
+---
+
 ## ബൂളിയൻ വാല്യൂകൾ (സ്ട്രിംഗ് ആയി)
 സത്യം = "ശരി"
 അസത്യം = "തെറ്റ്"
 പറയു "ഇത് {സത്യം} ആണ്"
 പറയു "അത് {അസത്യം} ആണ്"
+
+---
 
 ## മിശ്രിത ഉദാഹരണം
 പേര് = "രാധ"
@@ -358,16 +430,22 @@ const LearningWindow = () => {
 പറയു "ഹലോ!"
 അവസാനം
 
+---
+
 ## വേരിയബിൾ ഉപയോഗിച്ച് ലൂപ്പ്
 സന്ദേശം = "നമസ്കാരം"
 വരിക്കു 5
 പറയു സന്ദേശം
 അവസാനം
 
+---
+
 ## എണ്ണൽ ലൂപ്പ്
 വരിക്കു 10
 പറയു "എണ്ണം"
 അവസാനം
+
+---
 
 ## ലൂപ്പിൽ വ്യത്യസ്ത സന്ദേശങ്ങൾ
 വരിക്കു 3
@@ -376,12 +454,16 @@ const LearningWindow = () => {
 പറയു "മൂന്നാമത്"
 അവസാനം
 
+---
+
 ## ലൂപ്പിൽ വേരിയബിൾ ഇന്റർപോളേഷൻ
 പേര് = "അജയൻ"
 വരിക്കു 4
 പറയു "ഹലോ {പേര്}!"
 ചായകട
 അവസാനം
+
+---
 
 ## നെസ്റ്റഡ് ലൂപ്പ് (ഒന്നിനുള്ളിൽ മറ്റൊന്ന്)
 വരിക്കു 2
@@ -390,6 +472,8 @@ const LearningWindow = () => {
 പറയു "അകത്തെ ലൂപ്പ്"
 അവസാനം
 അവസാനം
+
+---
 
 ## ലൂപ്പിനൊപ്പം ചായ ബ്രേക്ക്
 വരിക്കു 5
@@ -410,11 +494,15 @@ const LearningWindow = () => {
 പറയു "എണ്ണം: {എണ്ണം}"
 അവസാനം
 
+---
+
 ## ടൈം ടേബിൾ പാറ്റേൺ
-സംഖ്യ = "5"
+���ംഖ്യ = "5"
 വരിക്കു 10
 പറയു "{സംഖ്യ} ന്റെ ഗുണിതം"
 അവസാനം
+
+---
 
 ## ആവർത്തന പാറ്റേൺ
 വാക്ക് = "മലയാളം"
@@ -423,12 +511,16 @@ const LearningWindow = () => {
 പറയു "സുന്ദരമായ ഭാഷ"
 അവസാനം
 
+---
+
 ## പ്രോഗ്രസ് ഇൻഡിക്കേറ്റർ
 വരിക്കു 8
 പറയു "ലോഡിംഗ്..."
 ചായകട
 പറയു "പൂർത്തിയായി!"
 അവസാനം
+
+---
 
 ## മൾട്ടിപ്പിൾ വേരിയബിൾ ലൂപ്പ്
 പേര് = "രമേശ്"
@@ -438,6 +530,8 @@ const LearningWindow = () => {
 പറയു "സ്ഥലം: {സ്ഥലം}"
 പറയു "---"
 അവസാനം
+
+---
 
 ## ലൂപ്പ് വിത്ത് ബ്രേക്കുകൾ
 വരിക്കു 6
@@ -460,6 +554,8 @@ const LearningWindow = () => {
 പറയു "{സമയം} {പേര്} ചേട്ടാ!"
 പറയു "എങ്ങനെയുണ്ട്?"
 
+---
+
 ## ഇൻഫർമേഷൻ ഡിസ്പ്ലേ
 പേര് = "പ്രിയ"
 പ്രായം = "25"
@@ -473,12 +569,16 @@ const LearningWindow = () => {
 പറയു "സ്ഥലം: {സ്ഥലം}"
 പറയു "========================"
 
+---
+
 ## മെനു സിസ്റ്റം
 പറയു "=== മലയാളം റെസ്റ്റോറന്റ് ==="
 പറയു "1. സാധാരണ മീൽസ് - 50 രൂപ"
 പറയു "2. സ്പെഷ്യൽ മീൽസ് - 80 രൂപ"
 പറയു "3. ബിരിയാണി - 120 രൂപ"
 പറയു "========================"
+
+---
 
 ## കൗണ്ട്ഡൗൺ പാറ്റേൺ
 പറയു "കൗണ്ട്ഡൗൺ ആരംഭിക്കുന്നു..."
@@ -487,6 +587,8 @@ const LearningWindow = () => {
 ചായകട
 അവസാനം
 പറയു "പൂർത്തിയായി!"
+
+---
 
 ## ലിസ്റ്റ് ജനറേഷൻ
 പറയു "=== ഫലങ്ങൾ ==="
@@ -523,6 +625,8 @@ const LearningWindow = () => {
 പറയു "മൊത്തം ഫലം: വിജയം"
 പറയു "================================"
 
+---
+
 ## ഷോപ്പിംഗ് ബിൽ
 കടയുടെപേര് = "കേരള സ്റ്റോർ"
 ഉപഭോക്താവ് = "രാജേഷ്"
@@ -542,6 +646,8 @@ const LearningWindow = () => {
 പറയു "നന്ദി!"
 പറയു "================================"
 
+---
+
 ## ടൈം ടേബിൾ ജനറേറ്റർ
 ക്ലാസ് = "8-B"
 പറയു "=== {ക്ലാസ്} ടൈം ടേബിൾ ==="
@@ -552,6 +658,8 @@ const LearningWindow = () => {
 അവസാനം
 
 പറയു "=== അവസാനം ==="
+
+---
 
 ## ഇവന്റ് ഇൻവിറ്റേഷൻ
 ഇവന്റ് = "ഓണാഘോഷം"
@@ -594,6 +702,8 @@ const LearningWindow = () => {
 പറയു "ഗുണനം: 50"
 പറയു "ഹരണം: 2"
 
+---
+
 ## 2. സ്റ്റുഡന്റ് അറ്റൻഡൻസ് സിസ്റ്റം
 പറയു "=== ഹാജർ പട്ടിക ==="
 ക്ലാസ് = "9-A"
@@ -610,6 +720,8 @@ const LearningWindow = () => {
 പറയു "-------------------"
 പറയു "മൊത്തം: 5 പേർ ഹാജർ"
 
+---
+
 ## 3. ലൈബ്രറി ബുക്ക് സിസ്റ്റം
 പറയു "=== ലൈബ്രറി മാനേജ്മെന്റ് ==="
 ലൈബ്രറി = "സിറ്റി ലൈബ്രറി"
@@ -624,6 +736,8 @@ const LearningWindow = () => {
 പറയു ""
 പറയു "പുസ്തകം കടം വാങ്ങാൻ"
 പറയു "കൗണ്ടറിൽ വരിക"
+
+---
 
 ## 4. റെസ്റ്റോറന്റ് ഓർഡർ സിസ്റ്റം
 റെസ്റ്റോറന്റ് = "കേരള കിച്ചൻ"
@@ -642,6 +756,8 @@ const LearningWindow = () => {
 പറയു ""
 പറയു "ഓർഡർ ചെയ്യാൻ വെയിറ്ററെ വിളിക്കുക"
 പറയു "നന്ദി! 🙏"
+
+---
 
 ## 5. ഹോട്ടൽ റൂം ബുക്കിംഗ്
 ഹോട്ടൽ = "കേരള പാലസ്"
@@ -664,6 +780,8 @@ const LearningWindow = () => {
 ചായകട
 പറയു "ഏതെങ്കിലും സഹായം വേണമെങ്കിൽ"
 പറയു "റിസപ്ഷനിൽ വിളിക്കുക"
+
+---
 
 ## 6. ഫിറ്റ്നസ് ട്രാക്കർ
 ഉപയോക്താവ് = "രാജു"
@@ -696,6 +814,8 @@ const LearningWindow = () => {
     { id: "examples", label: "ഉദാഹരണങ്ങൾ", icon: "💡" },
   ];
 
+  const codeBlocks = extractCodeBlocks(syntaxExamples[activeTab].content);
+
   return (
     <div className="h-full bg-gray-900/90 text-white flex flex-col">
       {/* Tab Navigation */}
@@ -719,14 +839,74 @@ const LearningWindow = () => {
       {/* Content Area */}
       <div className="flex-1 overflow-auto p-2 md:p-4">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-lg md:text-2xl font-bold mb-4 text-blue-400">
-            {syntaxExamples[activeTab].title}
-          </h2>
-          <div className="bg-gray-800/50 rounded-lg p-2 md:p-4 font-mono text-xs md:text-sm">
-            <pre className="whitespace-pre-wrap text-green-300 leading-relaxed">
-              {syntaxExamples[activeTab].content}
-            </pre>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg md:text-2xl font-bold text-blue-400">
+              {syntaxExamples[activeTab].title}
+            </h2>
+            <button
+              onClick={() => copyToClipboard(syntaxExamples[activeTab].content)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-2 md:px-3 py-1 rounded-md transition-colors text-xs md:text-sm flex items-center gap-1"
+            >
+              📋 Copy All
+            </button>
           </div>
+
+          {/* Copy feedback */}
+          {copiedText && (
+            <div className="mb-4 text-green-400 text-sm text-center">
+              {copiedText}
+            </div>
+          )}
+
+          {/* Render code blocks with individual copy buttons */}
+          <div className="space-y-4">
+            {codeBlocks.map((block, index) => (
+              <div
+                key={index}
+                className="bg-gray-800/50 rounded-lg overflow-hidden"
+              >
+                <div className="flex items-center justify-between p-2 bg-gray-700/50 border-b border-gray-600">
+                  <h3 className="text-sm md:text-base font-semibold text-blue-300">
+                    {block.title}
+                  </h3>
+                  <button
+                    onClick={() => copyToClipboard(block.code)}
+                    className="bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded text-xs flex items-center gap-1"
+                  >
+                    📋 Copy
+                  </button>
+                </div>
+                <div className="p-2 md:p-4">
+                  <pre
+                    className="whitespace-pre-wrap text-green-300 leading-relaxed font-mono text-xs md:text-sm select-text cursor-text"
+                    style={{
+                      userSelect: "text",
+                      WebkitUserSelect: "text",
+                      MozUserSelect: "text",
+                    }}
+                  >
+                    {block.code}
+                  </pre>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* If no code blocks found, show the full content */}
+          {codeBlocks.length === 0 && (
+            <div className="bg-gray-800/50 rounded-lg p-2 md:p-4 font-mono text-xs md:text-sm">
+              <pre
+                className="whitespace-pre-wrap text-green-300 leading-relaxed select-text cursor-text"
+                style={{
+                  userSelect: "text",
+                  WebkitUserSelect: "text",
+                  MozUserSelect: "text",
+                }}
+              >
+                {syntaxExamples[activeTab].content}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
 
@@ -770,6 +950,7 @@ const App = () => {
   const [isTerminalVisible, setIsTerminalVisible] = useState(false);
   const [terminalZIndex, setTerminalZIndex] = useState(50);
   const [windowBaseZIndex, setWindowBaseZIndex] = useState(10);
+  const [isLoadingFiles, setIsLoadingFiles] = useState(true); // New state for loading spinner
 
   const windowsRef = useRef(windows);
   useEffect(() => {
@@ -783,6 +964,7 @@ const App = () => {
   }, []);
 
   const fetchFiles = async (currentSessionId) => {
+    setIsLoadingFiles(true); // Start loading
     try {
       const response = await fetch(`https://useless2-0.onrender.com/files?`);
       if (!response.ok) {
@@ -802,6 +984,8 @@ const App = () => {
         `Error: ${error.message}\n` +
           "ബാക്കെൻഡിൽ നിന്ന് ഫയലുകൾ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല."
       );
+    } finally {
+      setIsLoadingFiles(false); // End loading
     }
   };
 
@@ -1223,32 +1407,41 @@ const App = () => {
         }
         onContextMenu={handleDesktopContextMenu}
       >
-        <div className="p-1 md:p-2 flex flex-col flex-wrap gap-x-1 gap-y-1 md:gap-y-2 h-full content-start">
-          {mlmFiles.map((file) => (
+        {isLoadingFiles ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-900/70 z-[100]">
+            <div className="flex flex-col items-center text-white">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+              <p className="mt-4 text-lg">ഫയലുകൾ ലോഡ് ചെയ്യുന്നു...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="p-1 md:p-2 flex flex-col flex-wrap gap-x-1 gap-y-1 md:gap-y-2 h-full content-start">
+            {mlmFiles.map((file) => (
+              <div
+                key={file.id}
+                onClick={() => openEditor(file)}
+                onContextMenu={(e) => handleFileContextMenu(e, file.id)}
+                className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-16 md:w-20 text-white"
+              >
+                <div className="text-lg md:text-2xl">📝</div>
+                <span className="text-xs text-center mt-1 truncate w-full">
+                  {file.name}
+                </span>
+              </div>
+            ))}
+
+            {/* Learning Guide Desktop Icon */}
             <div
-              key={file.id}
-              onClick={() => openEditor(file)}
-              onContextMenu={(e) => handleFileContextMenu(e, file.id)}
+              onClick={openLearningWindow}
               className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-16 md:w-20 text-white"
             >
-              <div className="text-lg md:text-2xl">📝</div>
+              <div className="text-lg md:text-2xl">📚</div>
               <span className="text-xs text-center mt-1 truncate w-full">
-                {file.name}
+                പഠന സഹായി
               </span>
             </div>
-          ))}
-
-          {/* Learning Guide Desktop Icon */}
-          <div
-            onClick={openLearningWindow}
-            className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-16 md:w-20 text-white"
-          >
-            <div className="text-lg md:text-2xl">📚</div>
-            <span className="text-xs text-center mt-1 truncate w-full">
-              പഠന സഹായി
-            </span>
           </div>
-        </div>
+        )}
 
         {contextMenu.visible && (
           <div
