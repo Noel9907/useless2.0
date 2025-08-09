@@ -21,4 +21,5 @@ class CodeRequest(BaseModel):
 def run_code(req: CodeRequest):
     interp = MalayalamInterpreter()
     result = interp.run(req.mlm_code)
+    print(result)
     return {"output": result}
