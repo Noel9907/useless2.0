@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 
 // Terminal Component
-const Terminal = ({ output, isVisible, onToggle }) => {
+const Terminal = ({ output, isVisible, onToggle, zIndex, onFocus }) => {
   const terminalRef = useRef(null);
 
   useEffect(() => {
@@ -15,9 +15,13 @@ const Terminal = ({ output, isVisible, onToggle }) => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-10 left-0 right-0 h-48 bg-gray-900/95 backdrop-blur-lg border-t border-gray-700 text-white z-40">
+    <div
+      className="fixed bottom-10 left-0 right-0 h-48 md:h-48 sm:h-40 bg-gray-900/95 backdrop-blur-lg border-t border-gray-700 text-white"
+      style={{ zIndex: zIndex }}
+      onClick={onFocus}
+    >
       <div className="flex items-center justify-between p-2 bg-gray-800/90 border-b border-gray-600">
-        <span className="text-sm font-mono">🖥️ കമാൻഡ് ജനാല</span>
+        <span className="text-xs md:text-sm font-mono">🖥️ കമാൻഡ് ജനാല</span>
         <button
           onClick={onToggle}
           className="text-gray-400 hover:text-white transition-colors"
@@ -27,7 +31,7 @@ const Terminal = ({ output, isVisible, onToggle }) => {
       </div>
       <div
         ref={terminalRef}
-        className="h-full p-4 overflow-auto font-mono text-sm bg-black/50"
+        className="h-full p-2 md:p-4 overflow-auto font-mono text-xs md:text-sm bg-black/50"
       >
         <pre className="whitespace-pre-wrap text-green-400">
           {output ||
@@ -47,25 +51,56 @@ const Window = ({
   onMouseDown,
   onFocus,
   isActive,
+  zIndex,
 }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const windowStyle = isMobile
+    ? {
+        left: "10px",
+        top: "10px",
+        right: "10px",
+        bottom: "60px",
+        width: "auto",
+        height: "auto",
+        zIndex: zIndex,
+      }
+    : {
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        width: "900px",
+        height: "600px",
+        zIndex: zIndex,
+      };
+
   return (
     <div
       onMouseDown={onFocus}
-      className={`absolute w-[900px] h-[600px] flex flex-col bg-gray-800/90 backdrop-blur-lg rounded-lg shadow-2xl overflow-hidden transition-shadow duration-200 ${
+      onTouchStart={onFocus}
+      className={`absolute flex flex-col bg-gray-800/90 backdrop-blur-lg rounded-lg shadow-2xl overflow-hidden transition-shadow duration-200 ${
         isActive
           ? "shadow-blue-500/50 border border-blue-500"
           : "border border-gray-700"
-      }`}
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-      }}
+      } ${isMobile ? "w-auto h-auto" : "w-[900px] h-[600px]"}`}
+      style={windowStyle}
     >
       <div
         className="flex items-center justify-between p-2 bg-gray-900/80 text-white rounded-t-lg cursor-move"
-        onMouseDown={(e) => onMouseDown(e, position.x, position.y)}
+        onMouseDown={(e) => !isMobile && onMouseDown(e, position.x, position.y)}
+        onTouchStart={(e) =>
+          !isMobile && onMouseDown(e, position.x, position.y)
+        }
       >
-        <span className="truncate ml-2 text-sm">{title}</span>
+        <span className="truncate ml-2 text-xs md:text-sm">{title}</span>
         <button
           onClick={() => onClose(id)}
           className="bg-red-500 hover:bg-red-600 w-4 h-4 rounded-full flex items-center justify-center"
@@ -102,18 +137,18 @@ const TextEditor = ({ fileId, filename, initialCode, onRun, onSave }) => {
         onChange={(e) => {
           setCode(e.target.value);
         }}
-        className="flex-grow w-full h-full bg-gray-900/90 text-white p-4 font-mono text-sm resize-none focus:outline-none rounded-b-lg"
+        className="flex-grow w-full h-full bg-gray-900/90 text-white p-2 md:p-4 font-mono text-xs md:text-sm resize-none focus:outline-none rounded-b-lg"
       />
       <div className="bg-gray-900/80 p-2 rounded-b-lg flex justify-end gap-2">
         <button
           onClick={() => onSave(fileId, filename, code)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-2 md:px-4 py-1 md:py-2 rounded-md transition-colors text-xs md:text-sm"
         >
           💾 സേവ് ചെയ്യുക
         </button>
         <button
           onClick={() => onRun(code)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors"
+          className="bg-green-600 hover:bg-green-700 text-white px-2 md:px-4 py-1 md:py-2 rounded-md transition-colors text-xs md:text-sm"
         >
           ▶️ പ്രവർത്തിപ്പിക്കുക
         </button>
@@ -124,8 +159,8 @@ const TextEditor = ({ fileId, filename, initialCode, onRun, onSave }) => {
 
 const OutputWindow = ({ output }) => {
   return (
-    <div className="h-full bg-gray-900/90 p-4 rounded-b-lg overflow-auto">
-      <pre className="text-white font-mono whitespace-pre-wrap text-sm">
+    <div className="h-full bg-gray-900/90 p-2 md:p-4 rounded-b-lg overflow-auto">
+      <pre className="text-white font-mono whitespace-pre-wrap text-xs md:text-sm">
         {output}
       </pre>
     </div>
@@ -134,9 +169,9 @@ const OutputWindow = ({ output }) => {
 
 const SettingsWindow = () => {
   return (
-    <div className="p-4 text-white">
-      <h2 className="text-xl font-bold mb-4">ക്രമീകരണങ്ങൾ</h2>
-      <p>
+    <div className="p-2 md:p-4 text-white">
+      <h2 className="text-lg md:text-xl font-bold mb-4">ക്രമീകരണങ്ങൾ</h2>
+      <p className="text-sm md:text-base">
         ഇതൊരു ഡെമോ ക്രമീകരണ വിൻഡോ ആണ്. ഇവിടെ നിങ്ങൾക്ക് നിങ്ങളുടെ ഓപ്പറേറ്റിംഗ്
         സിസ്റ്റത്തിന്റെ ക്രമീകരണങ്ങൾ മാറ്റാൻ കഴിയും.
       </p>
@@ -150,36 +185,128 @@ const LearningWindow = () => {
 
   const syntaxExamples = {
     basics: {
-      title: "അടിസ്ഥാന വാക്യഘടന",
+      title: "അടിസ്ഥാന വാക്യഘടന - Basic Syntax Examples",
       content: `
-# മലയാളം പ്രോഗ്രാമിംഗ് ഭാഷ - അടിസ്ഥാനങ്ങൾ
+# മലയാളം പ്രോഗ്രാമിംഗ് ഭാഷ - അടിസ്ഥാന ഉദാഹരണങ്ങൾ
+# Malayalam Programming Language - Basic Examples
 
-## വേരിയബിൾ അസൈൻമെന്റ് (Variable Assignment)
-പേര് = "രാമൻ"
-വയസ്സ് = "25"
-സ്ഥലം = "കേരളം"
-സന്ദേശം = "ഹലോ വേൾഡ്!"
+## 1. ലളിതമായ പ്രിന്റ് (Simple Print)
+പറയു "ഹലോ ലോകം"
 
-## ഔട്ട്പുട്ട് പ്രിന്റിംഗ് (Output Printing)
-പറയു "ഹലോ മലയാളം!"
-പറയു പേര്
-പറയു സന്ദേശം
+# Translation: Print "Hello World"
+# Output: ഹലോ ലോകം
 
-## വേരിയബിൾ ഇന്റർപോളേഷൻ (Variable Interpolation)
-പേര് = "സീത"
-പറയു "എന്റെ പേര് {പേര്} ആണ്"
-പറയു "ഞാൻ {സ്ഥലം} ൽ നിന്നാണ്"
+---
 
-## ചായ ബ്രേക്ക് (Tea Break)
+## 2. വേരിയബിൾ ഉപയോഗം (Variable Usage)
+പേര് = "അനു"
+പറയു "എന്റെ പേര് {പേര്}"
+
+# Translation: 
+# name = "Anu"
+# print "My name is {name}"
+# Output: എന്റെ പേര് അനു
+
+---
+
+## 3. കണ്ടിഷൻ ചെക്ക് (Condition Check)
+പേര് = "നോവൽ"
+എങ്കിൽ പേര് == "നോവൽ"
+    പറയു "ഹായ് നോവൽ"
+അവസാനം
+
+# Translation:
+# name = "Novel"
+# if name == "Novel":
+#     print "Hi Novel"
+# end
+# Output: ഹായ് നോവൽ
+
+---
+
+## 4. ലളിതമായ ലൂപ്പ് (Simple Loop)
+വരിക്കു 5
+    പറയു "ഞാൻ ലൂപ്പിലാണ്"
+അവസാനം
+
+# Translation:
+# for 5 times:
+#     print "I am in loop"
+# end
+# Output: (5 times) ഞാൻ ലൂപ്പിലാണ്
+
+---
+
+## 5. ലൂപ്പിൽ വേരിയബിൾ (Variable in Loop)
+പേര് = "അരുൺ"
+വരിക്കു 3
+    പറയു "{പേര്} കോഡിംഗ് ചെയ്യുന്നു"
+അവസാനം
+
+# Translation:
+# name = "Arun"
+# for 3 times:
+#     print "{name} is coding"
+# end
+# Output: (3 times) അരുൺ കോഡിംഗ് ചെയ്യുന്നു
+
+---
+
+## 6. ചായ ബ്രേക്ക് (Tea Break)
+പറയു "പണി തുടങ്ങി..."
 ചായകട
-പറയു "ചായ കുടിച്ചു കഴിഞ്ഞു!"
+പറയു "വീണ്ടും പണി"
 
-## ലളിതമായ പ്രോഗ്രാം
-പേര് = "കൃഷ്ണൻ"
-പറയു "നമസ്കാരം!"
-പറയു "എന്റെ പേര് {പേര്} ആണ്"
+# Translation:
+# print "Work started..."
+# tea_break (5 second pause)
+# print "Work again"
+# Output: പണി തുടങ്ങി... (pause) വീണ്ടും പണി
+
+---
+
+## 7. സങ്കീർണ്ണമായ പ്രോഗ്രാം (Complex Program)
+പേര് = "ജോസഫ്"
+പറയു "ഹായ് {പേര്}"
+എങ്കിൽ പേര് == "ജോസഫ്"
+    പറയു "എനിക്ക് നിന്നെ അറിയാം!"
+അവസാനം
+വരിക്കു 2
+    പറയു "{പേര്} പ്രോഗ്രാം എഴുതുന്നു"
+അവസാനം
 ചായകട
-പറയു "നന്ദി!"
+പറയു "Bye {പേര്}"
+
+# Translation:
+# name = "Joseph"
+# print "Hi {name}"
+# if name == "Joseph":
+#     print "I know you!"
+# end
+# for 2 times:
+#     print "{name} is writing program"
+# end
+# tea_break
+# print "Bye {name}"
+# 
+# Output:
+# ഹായ് ജോസഫ്
+# എനിക്ക് നിന്നെ അറിയാം!
+# ജോസഫ് പ്രോഗ്രാം എഴുതുന്നു
+# ജോസഫ് പ്രോഗ്രാം എഴുതുന്നു
+# (pause)
+# Bye ജോസഫ്
+
+---
+
+## പ്രധാന കീവേഡുകൾ (Important Keywords)
+• പറയു - print (പ്രിന്റ് ചെയ്യാൻ)
+• പേര് = - variable assignment (വേരിയബിൾ സെറ്റ് ചെയ്യാൻ)
+• എങ്കിൽ - if (വ്യവസ്ഥ പരിശോധിക്കാൻ)
+• വരിക്കു - loop (ആവർത്തിക്കാൻ)
+• അവസാനം - end (അവസാനിപ്പിക്കാൻ)
+• ചായകട - tea break (വിശ്രമിക്കാൻ)
+• {വേരിയബിൾ} - variable interpolation (വേരിയബിൾ ഉപയോഗിക്കാൻ)
     `,
     },
     datatypes: {
@@ -249,7 +376,7 @@ const LearningWindow = () => {
 പറയു "മൂന്നാമത്"
 അവസാനം
 
-## ലൂപ്പിനുള്ളിൽ വേരിയബിൾ ഇന്റർപോളേഷൻ
+## ലൂപ്പിൽ വേരിയബിൾ ഇന്റർപോളേഷൻ
 പേര് = "അജയൻ"
 വരിക്കു 4
 പറയു "ഹലോ {പേര്}!"
@@ -577,25 +704,25 @@ const LearningWindow = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 text-xs md:text-sm whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? "bg-blue-600 text-white"
                 : "text-gray-300 hover:text-white hover:bg-gray-700"
             }`}
           >
             <span>{tab.icon}</span>
-            <span>{tab.label}</span>
+            <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-2 md:p-4">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4 text-blue-400">
+          <h2 className="text-lg md:text-2xl font-bold mb-4 text-blue-400">
             {syntaxExamples[activeTab].title}
           </h2>
-          <div className="bg-gray-800/50 rounded-lg p-4 font-mono text-sm">
+          <div className="bg-gray-800/50 rounded-lg p-2 md:p-4 font-mono text-xs md:text-sm">
             <pre className="whitespace-pre-wrap text-green-300 leading-relaxed">
               {syntaxExamples[activeTab].content}
             </pre>
@@ -641,6 +768,8 @@ const App = () => {
   // Terminal state
   const [terminalOutput, setTerminalOutput] = useState("");
   const [isTerminalVisible, setIsTerminalVisible] = useState(false);
+  const [terminalZIndex, setTerminalZIndex] = useState(50);
+  const [windowBaseZIndex, setWindowBaseZIndex] = useState(10);
 
   const windowsRef = useRef(windows);
   useEffect(() => {
@@ -713,12 +842,20 @@ const App = () => {
 
   const bringToFront = (id) => {
     setActiveWindowId(id);
+    setTerminalZIndex(50); // Reset terminal z-index
+    setWindowBaseZIndex(60); // Bring windows above terminal
     setWindows((prevWindows) => {
       const windowToMove = prevWindows.find((win) => win.id === id);
       if (!windowToMove) return prevWindows;
       const otherWindows = prevWindows.filter((win) => win.id !== id);
       return [...otherWindows, windowToMove];
     });
+  };
+
+  const bringTerminalToFront = () => {
+    setTerminalZIndex(70); // Bring terminal above all windows
+    setWindowBaseZIndex(10); // Reset window z-index
+    setActiveWindowId(null);
   };
 
   const openEditor = async (file) => {
@@ -915,7 +1052,7 @@ const App = () => {
         )
       );
 
-      showInTerminal("ഫയലിന്റെ പേര് വിജയക��മായി മാറ്റി.");
+      showInTerminal("ഫയലിന്റെ പേര് വിജയകരമായി മാറ്റി.");
     } catch (error) {
       console.error("Failed to rename file:", error);
       showInTerminal(
@@ -995,9 +1132,10 @@ const App = () => {
     try {
       setTerminalOutput("കോഡ് പ്രവർത്തിപ്പിക്കുന്നു...\n");
       setIsTerminalVisible(true);
+      bringTerminalToFront(); // Bring terminal to front when running code
 
       const payload = { mlm_code: code };
-      const apiUrl = `http://127.0.0.1:8000/run`;
+      const apiUrl = `https://useless2-0.onrender.com/run`;
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -1065,143 +1203,155 @@ const App = () => {
   };
 
   return (
-    <div
-      ref={desktopRef}
-      className="relative w-screen h-screen bg-cover bg-center font-inter select-none overflow-hidden"
-      style={{
-        backgroundImage: `url("https://c4.wallpaperflare.com/wallpaper/586/603/742/minimalism-4k-for-mac-desktop-wallpaper-preview.jpg")`,
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onClick={() =>
-        setContextMenu({ visible: false, x: 0, y: 0, fileId: null, type: null })
-      }
-      onContextMenu={handleDesktopContextMenu}
-    >
-      <div className="p-2 flex flex-col flex-wrap gap-x-1 gap-y-2 h-full content-start">
-        {mlmFiles.map((file) => (
+    <div>
+      <div
+        ref={desktopRef}
+        className="relative w-screen h-screen bg-cover bg-center font-inter select-none overflow-hidden"
+        style={{
+          backgroundImage: `url("./os.jpg")`,
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onClick={() =>
+          setContextMenu({
+            visible: false,
+            x: 0,
+            y: 0,
+            fileId: null,
+            type: null,
+          })
+        }
+        onContextMenu={handleDesktopContextMenu}
+      >
+        <div className="p-1 md:p-2 flex flex-col flex-wrap gap-x-1 gap-y-1 md:gap-y-2 h-full content-start">
+          {mlmFiles.map((file) => (
+            <div
+              key={file.id}
+              onClick={() => openEditor(file)}
+              onContextMenu={(e) => handleFileContextMenu(e, file.id)}
+              className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-16 md:w-20 text-white"
+            >
+              <div className="text-lg md:text-2xl">📝</div>
+              <span className="text-xs text-center mt-1 truncate w-full">
+                {file.name}
+              </span>
+            </div>
+          ))}
+
+          {/* Learning Guide Desktop Icon */}
           <div
-            key={file.id}
-            onClick={() => openEditor(file)}
-            onContextMenu={(e) => handleFileContextMenu(e, file.id)}
-            className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-20 text-white"
+            onClick={openLearningWindow}
+            className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-16 md:w-20 text-white"
           >
-            <div className="text-2xl">📝</div>
+            <div className="text-lg md:text-2xl">📚</div>
             <span className="text-xs text-center mt-1 truncate w-full">
-              {file.name}
+              പഠന സഹായി
             </span>
           </div>
+        </div>
+
+        {contextMenu.visible && (
+          <div
+            className="absolute bg-gray-900 text-white rounded-md shadow-lg p-1 z-50 min-w-[120px] md:min-w-[150px]"
+            style={{ top: contextMenu.y, left: contextMenu.x }}
+          >
+            {contextMenu.type === "file" && (
+              <>
+                <div
+                  onClick={() => handleMenuItemClick("rename")}
+                  className="px-2 md:px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2 text-xs md:text-sm"
+                >
+                  ✏️ പേര് മാറ്റുക
+                </div>
+                <div
+                  onClick={() => handleMenuItemClick("delete")}
+                  className="px-2 md:px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2 text-xs md:text-sm"
+                >
+                  ❌ ഡിലീറ്റ് ചെയ്യുക
+                </div>
+              </>
+            )}
+            {contextMenu.type === "desktop" && (
+              <>
+                <div
+                  onClick={() => handleMenuItemClick("refresh")}
+                  className="px-2 md:px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2 text-xs md:text-sm"
+                >
+                  🔄 പുതുക്കുക
+                </div>
+                <div
+                  onClick={() => handleMenuItemClick("newFile")}
+                  className="px-2 md:px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2 text-xs md:text-sm"
+                >
+                  ➕ പുതിയ ഫയൽ
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {windows.map((win, index) => (
+          <Window
+            key={win.id}
+            id={win.id}
+            title={win.title}
+            position={win.position}
+            onClose={handleClose}
+            onMouseDown={(e, x, y) => handleMouseDown(e, win.id, x, y)}
+            onFocus={() => bringToFront(win.id)}
+            isActive={activeWindowId === win.id}
+            zIndex={
+              windowBaseZIndex + index + (activeWindowId === win.id ? 100 : 0)
+            }
+          >
+            {win.type === "editor" && (
+              <TextEditor
+                fileId={win.fileId}
+                filename={win.title}
+                initialCode={win.content}
+                onRun={runCode}
+                onSave={(fileId, filename, code) =>
+                  saveFile(fileId, filename, code)
+                }
+              />
+            )}
+            {win.type === "output" && <OutputWindow output={win.content} />}
+            {win.type === "settings" && <SettingsWindow />}
+            {win.type === "learning" && <LearningWindow />}
+          </Window>
         ))}
 
-        {/* Learning Guide Desktop Icon */}
-        <div
-          onClick={openLearningWindow}
-          className="flex flex-col items-center p-1 rounded-lg hover:bg-gray-800/50 cursor-pointer w-20 text-white"
-        >
-          <div className="text-2xl">📚</div>
-          <span className="text-xs text-center mt-1 truncate w-full">
-            പഠന സഹായി
-          </span>
-        </div>
+        {/* Terminal Component with updated z-index and click handler */}
+        <Terminal
+          output={terminalOutput}
+          isVisible={isTerminalVisible}
+          onToggle={() => setIsTerminalVisible(!isTerminalVisible)}
+          zIndex={terminalZIndex}
+          onFocus={bringTerminalToFront}
+        />
       </div>
-
-      {contextMenu.visible && (
-        <div
-          className="absolute bg-gray-900 text-white rounded-md shadow-lg p-1 z-50 min-w-[150px]"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          {contextMenu.type === "file" && (
-            <>
-              <div
-                onClick={() => handleMenuItemClick("rename")}
-                className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2"
-              >
-                ✏️ പേര് മാറ്റുക
-              </div>
-              <div
-                onClick={() => handleMenuItemClick("delete")}
-                className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2"
-              >
-                ❌ ഡിലീറ്റ് ചെയ്യുക
-              </div>
-            </>
-          )}
-          {contextMenu.type === "desktop" && (
-            <>
-              <div
-                onClick={() => handleMenuItemClick("refresh")}
-                className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2"
-              >
-                🔄 പുതുക്കുക
-              </div>
-              <div
-                onClick={() => handleMenuItemClick("newFile")}
-                className="px-4 py-2 hover:bg-gray-700 cursor-pointer rounded-md flex items-center gap-2"
-              >
-                ➕ പുതിയ ഫയൽ
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {windows.map((win, index) => (
-        <Window
-          key={win.id}
-          id={win.id}
-          title={win.title}
-          position={win.position}
-          onClose={handleClose}
-          onMouseDown={(e, x, y) => handleMouseDown(e, win.id, x, y)}
-          onFocus={() => bringToFront(win.id)}
-          isActive={activeWindowId === win.id}
-          style={{ zIndex: index + 1 }}
-        >
-          {win.type === "editor" && (
-            <TextEditor
-              fileId={win.fileId}
-              filename={win.title}
-              initialCode={win.content}
-              onRun={runCode}
-              onSave={(fileId, filename, code) =>
-                saveFile(fileId, filename, code)
-              }
-            />
-          )}
-          {win.type === "output" && <OutputWindow output={win.content} />}
-          {win.type === "settings" && <SettingsWindow />}
-          {win.type === "learning" && <LearningWindow />}
-        </Window>
-      ))}
-
-      {/* Terminal Component */}
-      <Terminal
-        output={terminalOutput}
-        isVisible={isTerminalVisible}
-        onToggle={() => setIsTerminalVisible(!isTerminalVisible)}
-      />
 
       {showNewFileModal && (
         <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-80 text-white">
-            <h3 className="text-lg font-bold mb-4">പുതിയ ഫയൽ</h3>
+          <div className="bg-gray-800 p-4 md:p-6 rounded-lg shadow-xl w-72 md:w-80 text-white mx-4">
+            <h3 className="text-base md:text-lg font-bold mb-4">പുതിയ ഫയൽ</h3>
             <input
               type="text"
               value={newFileName}
               onChange={(e) => setNewFileName(e.target.value)}
               placeholder="ഫയലിന്റെ പേര്"
-              className="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
             />
             <div className="mt-4 flex justify-end space-x-2">
               <button
                 onClick={() => setShowNewFileModal(false)}
-                className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors"
+                className="bg-gray-600 hover:bg-gray-500 text-white px-3 md:px-4 py-2 rounded-md transition-colors text-xs md:text-sm"
               >
                 റദ്ദാക്കുക
               </button>
               <button
                 onClick={handleSaveNewFile}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 md:px-4 py-2 rounded-md transition-colors text-xs md:text-sm"
               >
                 സേവ് ചെയ്യുക
               </button>
@@ -1212,14 +1362,16 @@ const App = () => {
 
       {showRenameModal && (
         <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-xl w-80 text-white">
-            <h3 className="text-lg font-bold mb-4">ഫയലിന്റെ പേര് മാറ്റുക</h3>
+          <div className="bg-gray-800 p-4 md:p-6 rounded-lg shadow-xl w-72 md:w-80 text-white mx-4">
+            <h3 className="text-base md:text-lg font-bold mb-4">
+              ഫയലിന്റെ പേര് മാറ്റുക
+            </h3>
             <input
               type="text"
               value={renameFileName}
               onChange={(e) => setRenameFileName(e.target.value)}
               placeholder="പുതിയ പേര്"
-              className="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 rounded-md bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
             />
             <div className="mt-4 flex justify-end space-x-2">
               <button
@@ -1228,13 +1380,13 @@ const App = () => {
                   setRenameFileName("");
                   setRenameFileId(null);
                 }}
-                className="bg-gray-600 hover:bg-gray-500 text-white px-4 py-2 rounded-md transition-colors"
+                className="bg-gray-600 hover:bg-gray-500 text-white px-3 md:px-4 py-2 rounded-md transition-colors text-xs md:text-sm"
               >
                 റദ്ദാക്കുക
               </button>
               <button
                 onClick={handleRenameFile}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 md:px-4 py-2 rounded-md transition-colors text-xs md:text-sm"
               >
                 പേര് മാറ്റുക
               </button>
@@ -1243,32 +1395,37 @@ const App = () => {
         </div>
       )}
 
-      <div className="absolute bottom-0 left-0 right-0 h-10 bg-gray-900/80 backdrop-blur-md flex items-center justify-between px-4 text-white">
-        <div className="flex items-center space-x-2">
-          <button className="px-3 py-1 rounded-md hover:bg-blue-600 transition-colors">
+      <div className="absolute bottom-0 left-0 right-0 h-8 md:h-10 bg-gray-900/80 backdrop-blur-md flex items-center justify-between px-2 md:px-4 text-white">
+        <div className="flex items-center space-x-1 md:space-x-2">
+          <button className="px-2 md:px-3 py-1 rounded-md hover:bg-blue-600 transition-colors text-xs md:text-sm">
             🚀 സ്റ്റാർട്ട്
           </button>
           <button
             onClick={openSettingsWindow}
-            className="px-3 py-1 rounded-md hover:bg-gray-700 transition-colors"
+            className="px-2 md:px-3 py-1 rounded-md hover:bg-gray-700 transition-colors text-xs md:text-sm"
           >
-            ⚙️ ക്രമീകരണങ്ങൾ
+            ⚙️ <span className="hidden sm:inline">ക്രമീകരണങ്ങൾ</span>
           </button>
           <button
             onClick={openLearningWindow}
-            className="px-3 py-1 rounded-md hover:bg-gray-700 transition-colors"
+            className="px-2 md:px-3 py-1 rounded-md hover:bg-gray-700 transition-colors text-xs md:text-sm"
           >
-            📚 പഠന സഹായി
+            📚 <span className="hidden sm:inline">പഠന സഹായി</span>
           </button>
           <button
-            onClick={() => setIsTerminalVisible(!isTerminalVisible)}
-            className="px-3 py-1 rounded-md hover:bg-gray-700 transition-colors"
+            onClick={() => {
+              setIsTerminalVisible(!isTerminalVisible);
+              if (!isTerminalVisible) {
+                bringTerminalToFront();
+              }
+            }}
+            className="px-2 md:px-3 py-1 rounded-md hover:bg-gray-700 transition-colors text-xs md:text-sm"
           >
-            🖥️ കമാൻഡ് ജനാല
+            🖥️ <span className="hidden sm:inline">കമാൻഡ് ജനാല</span>
           </button>
         </div>
         <div>
-          <span className="text-sm">
+          <span className="text-xs md:text-sm">
             {new Date().toLocaleTimeString("ml-IN", {
               hour: "2-digit",
               minute: "2-digit",

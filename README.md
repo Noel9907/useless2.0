@@ -61,6 +61,9 @@ For Software:
 # Diagrams
 
 ![App Screenshot](./d.png)
+![App Screenshot](./y.png)
+![App Screenshot](./a.png)
+![App Screenshot](./b.png)
 
 ## API Endpoints
 
