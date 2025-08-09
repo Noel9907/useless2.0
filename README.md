@@ -94,8 +94,7 @@ Body: {
 
 # Video
 
-[Add your demo video link here]
-_Video demonstrates writing മലമ്പാമ്പ് code, executing it through the API, and showing the hilarious output including tea breaks and Malayalam responses_
+![App Vido](./v.mp4)
 
 # Additional Demos
 
