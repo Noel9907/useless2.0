@@ -4,7 +4,8 @@ from pydantic import BaseModel
 from interpreter import MalayalamInterpreter
 from fastapi.middleware.cors import CORSMiddleware
 from routes import file_routes
-
+from dotenv import load_dotenv
+load_dotenv()
 app = FastAPI()
 
 app.add_middleware(
